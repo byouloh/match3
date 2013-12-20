@@ -2,42 +2,54 @@
 using System.Collections;
 using System.Collections.Generic;
 
+/// <summary>
+/// Game. Главный класс игры в нем создается клетки.
+/// </summary>
 public class Game : MonoBehaviour
 {
-	public float CELL_WIDTH = 1;
-	public float CELL_HEIGHT = 1;
+	public float CELL_WIDTH = 0.5f;
+	public float CELL_HEIGHT = 0.5f;
 
 	public GameObject cellPrefab;
 	public GameObject cellsRoot;
-	public List<Cell> cells;
+	public List<List <Cell>> grid;
 
 	void Start()
 	{
-		cells = new List<Cell>();
+		CELL_WIDTH = 0.5f;
+		CELL_HEIGHT = 0.5f;
+		grid = new List<List <Cell>>();
 
-		int i;
+		int i, j;
+
 		for (i=0; i < 5; i++) {
-			GameObject cell = (GameObject)Instantiate(cellPrefab);
-			cell.transform.parent = cellsRoot.transform;
-			cell.transform.position = new Vector3(CELL_WIDTH * i, 0, 0);
+			List <Cell> row = new List<Cell>();
+			for (j=0; j<5; j++) {
+				GameObject cell = (GameObject)Instantiate(cellPrefab);
+				cell.transform.parent = cellsRoot.transform;
+				cell.transform.position = new Vector3(CELL_WIDTH * i - 1.4f, CELL_WIDTH * j - 1.4f, 0);
+				
+				Cell c = cell.GetComponent<Cell>();
+				
+				CellBlocker blocker = BlockFactory.createNew(BlockerType.CHAIN, c.gameObject);
+				Chip chip = ChipFactory.createNew(ChipType.BLUE, BonusType.SAME_TYPE, c.gameObject);
+				c.initialize(blocker, chip);
+				
+				row.Add(c);
+			}
+			grid.Add(row);
 
-			Cell c = cell.GetComponent<Cell>();
 
-			CellBlocker blocker = BlockFactory.createNew(BlockerType.CHAIN, c.gameObject);
-			Chip chip = ChipFactory.createNew(ChipType.BLUE, BonusType.SAME_TYPE, c.gameObject);
-			c.initialize(blocker, chip);
-
-			cells.Add(c);
 		}
 	}
 	
 	void Update()
 	{
-		if (Input.GetMouseButtonDown(0) && cells.Count > 0) {
-			if (!cells[0].explode(null)) {
-				cells.RemoveAt(0);
-			}
-		}
+		//if (Input.GetMouseButtonDown(0) && 25 > 0) {
+		//	if (!grid[0][0].explode(null)) {
+		//		grid[][].RemoveAt(0);
+		//	}
+		//}
 	}
 
 	void OnGUI()
