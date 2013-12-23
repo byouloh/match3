@@ -35,7 +35,19 @@ public class Cell : MonoBehaviour, IExplodable
 
 		Callback tmpCallback = _onExplodeComplete;
 
+		// Защищена ли фишка
+		bool chipProtected   = false;
+
+		// 
+		bool blockerExploded = false;
+
         if (blocker.explode(tmpCallback)) {
+			blockerExploded = true;
+
+			if (blocker.isProtecting()) {
+				chipProtected = true;
+			}
+
 			if (blocker.hasNext()) {
 				BlockerType nextBlockerType = blocker.getNext();
 				
@@ -47,9 +59,11 @@ public class Cell : MonoBehaviour, IExplodable
                     Debug.LogError(e.Message);
 				}
 			}
-		} else {
+		}
+
+		if (!chipProtected) {
 			if (chip == null || !chip.explode(tmpCallback)) {
-				return false;
+				return blockerExploded;
 			}
 
 			Destroy(chip.gameObject);

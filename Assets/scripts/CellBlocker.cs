@@ -12,13 +12,31 @@ public enum BlockerType
 
 public abstract class CellBlocker : MonoBehaviour, IExplodable
 {
+	/** Обработчик события по окончании взрыва. */
 	private Callback _explodeCallback;
 
+	/** Префаб анимации взрыва. */
     public GameObject explosionPrefab = null;
+
+	/** Фишка может покинуть ячейку. */
 	public abstract bool canLeave();
+
+	/** Фишка может войти в ячейку. */
 	public abstract bool canEnter();
+
+	/** Фишка может пройти через ячейку. */
 	public abstract bool canPass();
 
+	/** Защищает ли блокирующий элемент содержимое от взрыва. */
+	public abstract bool isProtecting();
+
+	/**
+	 * Взрывает блокирующий элемент.
+	 * 
+	 * @param callback обработчик событий по окончании взрыва
+	 * 
+	 * @return true, если началась анимация взрыва, иначе false
+	 */
 	public bool explode(Callback callback)
     {
 		_explodeCallback = callback;

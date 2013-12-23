@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class BlockerChain : CellBlocker
+public class BlockerWrap : CellBlocker
 {
 	public override bool canLeave()
 	{
@@ -25,7 +25,7 @@ public class BlockerChain : CellBlocker
 
 	public override bool isProtecting()
 	{
-		return true;
+		return false;
 	}
 
 	public override BlockerType getNext()

@@ -17,4 +17,10 @@ public class BlockerNone : CellBlocker
 	{
 		return true;
 	}
+
+	public override bool isProtecting()
+	{
+		return false;
+	}
+
 }
