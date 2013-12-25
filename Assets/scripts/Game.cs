@@ -44,7 +44,7 @@ public class Game : MonoBehaviour
 				Cell c = cell.GetComponent<Cell>();
 				
 				CellBlocker blocker = BlockFactory.createNew(BlockerType.NONE, c.gameObject);
-				Chip chip = ChipFactory.createNew(ChipType.BLUE, BonusType.NONE, c.gameObject);
+				Chip chip = ChipFactory.createNew(Random.Range(0, 5), BonusType.NONE, c.gameObject);
 				c.initialize(blocker, chip);
 
 				grid.setCell(i, j, c);

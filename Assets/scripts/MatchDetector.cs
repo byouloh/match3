@@ -23,7 +23,6 @@ public class MatchDetector
 	void findMatch() 
     {
         int i, j, g;
-        bool flag = true;
         int chainLength = 1;
 
         // Проверяем по строкам. 
@@ -63,7 +62,7 @@ public class MatchDetector
                 if (chainLength >= 3) {
                     // Запихиваем все в возвращаемый массив
                     Match tmpMatch = new Match ();
-                    for (g = 0;g < chainLength; g++){
+                    for (g = 0; g < chainLength; g++){
                         tmpMatch.Add(_grid.getCell((j + g), i));
                     }
                     explosionLines.Add(tmpMatch);
@@ -79,8 +78,6 @@ public class MatchDetector
 		if (_grid.getCell(cell1.x, cell1.y).getChip().bonusType == BonusType.SAME_TYPE) {
 		
         } else {
-            // Проверяем возможность взрыва для клетки 1 и 2
-            // для этого надо написать метод
             this.canCellExplosion(cell1);
             this.canCellExplosion(cell2);
         }
