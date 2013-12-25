@@ -3,11 +3,20 @@ using System.Collections;
 
 public enum BlockerType
 {
-	NONE = 0,
-	WRAP,
-	WRAP2,
-	CHAIN,
-	CHAIN2
+    /** Обычная ячейка. */
+    NONE = 0,
+    
+    /** Обертка. */
+    WRAP,
+    
+    /** Двойная обертка. */
+    WRAP2,
+    
+    /** Цепь. */
+    CHAIN,
+    
+    /** Двойная цепь. */
+    CHAIN2
 };
 
 public abstract class CellBlocker : MonoBehaviour, IExplodable

@@ -10,10 +10,10 @@ using System.Collections.Generic;
 public class Grid
 {
 	/** Ширина одной ячейки. */
-	public static float CELL_WIDTH  = 1;
+	public static float CELL_WIDTH  = 0.5f;
 
 	/** Высота одной ячейки. */
-	public static float CELL_HEIGHT = 1;
+	public static float CELL_HEIGHT = 0.5f;
 
 	/** Матрица ячеек. */
 	private List<List<Cell>> _cells;

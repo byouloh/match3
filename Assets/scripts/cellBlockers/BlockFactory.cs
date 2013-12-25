@@ -22,11 +22,11 @@ public static class BlockFactory
 				break;
 
 			case BlockerType.WRAP:
-				prefabName = "blockerNone";
+                prefabName = "blockerWrap";
 				break;
 
 			case BlockerType.WRAP2:
-				prefabName = "blockerNone";
+                prefabName = "blockerWrap2";
 				break;
 
 			case BlockerType.CHAIN:
@@ -34,7 +34,7 @@ public static class BlockFactory
 				break;
 
 			case BlockerType.CHAIN2:
-				prefabName = "blockerNone";
+                prefabName = "blockerChain2";
 				break;
 
 			default:
