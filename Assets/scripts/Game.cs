@@ -21,7 +21,7 @@ public class Game : MonoBehaviour
 	/** Инициализация. */
 	void Start()
 	{
-		grid = new Grid(4, 5);
+		grid = new Grid(9, 9);
 		testInitialize(cellsRoot, cellPrefab);
 		cellsRoot.transform.position = new Vector3(Grid.CELL_WIDTH*0.5f - Grid.CELL_WIDTH * grid.getColCount()*0.5f,
 		                                           -Grid.CELL_HEIGHT*0.5f + Grid.CELL_HEIGHT * grid.getRowCount()*0.5f, 0);

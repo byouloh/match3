@@ -3,30 +3,35 @@ using System.Collections;
 
 public class Cell : MonoBehaviour, IExplodable
 {
-	public Chip chip;
-	public CellBlocker blocker;
+	private Chip _chip = null;
+	private CellBlocker _blocker = null;
 	private Callback _explodeCallback = null;
+
+    /** Координата x клетки.*/
+    public int x;
+    /** Координата y клетки.*/
+    public int y;
 
 	// =======
 	public void initialize(CellBlocker blocker, Chip chip)
 	{
-		this.blocker = blocker;
-		this.chip    = chip;
+		_blocker = blocker;
+		_chip    = chip;
 	}
 
 	public bool canLeave()
 	{
-		return blocker.canLeave();
+		return _blocker.canLeave();
 	}
 	
 	public bool canEnter()
 	{
-		return blocker.canEnter();
+		return _blocker.canEnter();
 	}
 	
 	public bool canPass()
     {
-		return blocker.canPass();
+		return _blocker.canPass();
     }
 
 	public bool explode(Callback callback)
@@ -41,20 +46,20 @@ public class Cell : MonoBehaviour, IExplodable
 		// 
 		bool blockerExploded = false;
 
-        if (blocker.explode(tmpCallback)) {
+        if (_blocker.explode(tmpCallback)) {
 			blockerExploded = true;
 
-			if (blocker.isProtecting()) {
+			if (_blocker.isProtecting()) {
 				chipProtected = true;
 			}
 
-			if (blocker.hasNext()) {
-				BlockerType nextBlockerType = blocker.getNext();
+			if (_blocker.hasNext()) {
+				BlockerType nextBlockerType = _blocker.getNext();
 				
-				Destroy(blocker.gameObject);
+				Destroy(_blocker.gameObject);
 				
 				try {
-					blocker = BlockFactory.createNew(nextBlockerType, gameObject);
+					_blocker = BlockFactory.createNew(nextBlockerType, gameObject);
                 } catch (System.Exception e) {
                     Debug.LogError(e.Message);
 				}
@@ -62,13 +67,13 @@ public class Cell : MonoBehaviour, IExplodable
 		}
 
 		if (!chipProtected) {
-			if (chip == null || !chip.explode(tmpCallback)) {
+			if (_chip == null || !_chip.explode(tmpCallback)) {
 				return blockerExploded;
 			}
 
-			Destroy(chip.gameObject);
+			Destroy(_chip.gameObject);
 
-			chip = null;
+			_chip = null;
         }
 
 		return true;
@@ -80,4 +85,11 @@ public class Cell : MonoBehaviour, IExplodable
 			_explodeCallback();
 		}
 	}
+
+	public Chip getChip ()
+	{
+		return _chip;
+	}
+	
+
 }
