@@ -11,32 +11,32 @@ public class Game : MonoBehaviour
 {
 	/** Контейнер для ячеек. */
 	public GameObject cellsRoot;
-
+    
 	/** Шаблон ячейки. */
 	public GameObject cellPrefab;
-
+    
 	/** Матрица ячеек. */
 	private Grid grid;
-
+    
     /** Информация об уровне. */
     private Level level;
-
+    
 	/** Инициализация. */
 	void Start()
 	{
         loadLevel(1);
 	}
-
+    
 	void Update()
 	{
 		
 	}
-
+    
 	void OnGUI()
 	{
 		
 	}
-
+    
     /**
      * Загружает уровень.
      * 
@@ -44,21 +44,40 @@ public class Game : MonoBehaviour
      */
     public void loadLevel(int levelId)
     {
+        QueryResult res = DataBase.getInstance().query(
+            "SELECT " +
+                "l.maxMoves, l.existChips, " +
+                "l.starPoints1, l.starPoints2, l.starPoints3, " +
+                "c.rows, c.cols, c.cells " +
+            "FROM levels AS l " +
+            "INNER JOIN level_cells AS c ON (c.levelNum = l.num) " +
+            "WHERE (l.num = " + levelId + ") " +
+            "LIMIT 1"
+        );
+        
+        if (res.numRows() <= 0) {
+            Debug.LogError("Ошибка! Не удалось загрузить данные из базы данных");
+            return;
+        }
+        
+        DataRow info = res[0];
+        
         // Данные уровня
         this.level                      = new Level();
         this.level.levelId              = levelId;
-        this.level.maxMoves             = 20;
-        this.level.needPointsFirstStar  = 1000;
-        this.level.needPointsSecondStar = 2000;
-        this.level.needPointsThirdStar  = 3000;
+        this.level.maxMoves             = info.asInt("maxMoves");
+        this.level.chipTypes            = info.asInt("existChips");
+        this.level.needPointsFirstStar  = info.asInt("starPoints1");
+        this.level.needPointsSecondStar = info.asInt("starPoints2");
+        this.level.needPointsThirdStar  = info.asInt("starPoints3");
         
         int i;
         int j;
         
-        int rowCount = 4;
-        int colCount = 5;
+        int rowCount = info.asInt("rows");
+        int colCount = info.asInt("cols");
         
-        string cellsString = "0,513,1,1,0,1,1,1,1,1,1,514,3,4,1,0,1,5,1,0";
+        string cellsString = info.asString("cells");
         
         // Загружаем ячейки
         grid = new Grid(rowCount, colCount);
@@ -87,26 +106,31 @@ public class Game : MonoBehaviour
                     
                     CellBlocker blocker;
                     
-                    int cellType  = cellInfo & 0xFF;
-                    int chipType  = (cellInfo >> 8) & 0xF;
-                    int bonusType = (cellInfo >> 12) & 0xF;
+                    int blockerType = cellInfo & 0xFF;
+                    int chipType    = (cellInfo >> 8) & 0xF;
+                    int bonusType   = (cellInfo >> 12) & 0xF;
                     
-                    switch (cellType) {
+                    switch (blockerType) {
                         case 1:
                             blocker = BlockFactory.createNew(BlockerType.NONE, c.gameObject);
                             break;
+                            
                         case 2:
                             blocker = BlockFactory.createNew(BlockerType.CHAIN, c.gameObject);
                             break;
+                            
                         case 3:
                             blocker = BlockFactory.createNew(BlockerType.CHAIN2, c.gameObject);
                             break;
+                            
                         case 4:
                             blocker = BlockFactory.createNew(BlockerType.WRAP, c.gameObject);
                             break;
+                            
                         case 5:
                             blocker = BlockFactory.createNew(BlockerType.WRAP2, c.gameObject);
                             break;
+                            
                         default:
                             Debug.LogError("Ошибка! Неверный тип ячейки");
                             blocker = BlockFactory.createNew(BlockerType.NONE, c.gameObject);
@@ -115,50 +139,11 @@ public class Game : MonoBehaviour
                     
                     Chip chip = null;
                     
-                    if (chipType != 0) {
-                        BonusType bType;
-                        
-                        switch (bonusType) {
-                            case 0:
-                                bType = BonusType.NONE;
-                                break;
-                            case 1:
-                                bType = BonusType.HORIZONTAL_STRIP;
-                                break;
-                            case 2:
-                                bType = BonusType.VERTICAL_STRIP;
-                                break;
-                            case 3:
-                                bType = BonusType.SAME_TYPE;
-                                break;
-                            default:
-                                Debug.LogError("Ошибка! Неверный тип бонуса");
-                                bType = BonusType.NONE;
-                                break;
-                        }
-                        
-                        switch (chipType) {
-                            case 1:
-                                chip = ChipFactory.createNew(ChipType.RED, bType, c.gameObject);
-                                break;
-                            case 2:
-                                chip = ChipFactory.createNew(ChipType.GREEN, bType, c.gameObject);
-                                break;
-                            case 3:
-                                chip = ChipFactory.createNew(ChipType.BLUE, bType, c.gameObject);
-                                break;
-                            case 4:
-                                chip = ChipFactory.createNew(ChipType.YELLOW, bType, c.gameObject);
-                                break;
-                            case 5:
-                                chip = ChipFactory.createNew(ChipType.ORANGE, bType, c.gameObject);
-                                break;
-                            case 6:
-                                chip = ChipFactory.createNew(ChipType.PURPLE, bType, c.gameObject);
-                                break;
-                            default:
-                                Debug.LogError("Ошибка! Неверный тип фишки");
-                                break;
+                    if (chipType > 0) {
+                        try {
+                            chip = ChipFactory.createNew((ChipType)(chipType - 1), (BonusType)bonusType, c.gameObject);
+                        } catch(System.Exception) {
+                            Debug.LogError("Ошибка! Неверный тип фишки");
                         }
                     }
                     

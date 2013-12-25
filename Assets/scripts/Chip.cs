@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/** Тип фишки. */
 public enum ChipType
 {
 	RED = 0,
@@ -11,6 +12,7 @@ public enum ChipType
 	PURPLE
 }
 
+/** Тип бонуса фишки. */
 public enum BonusType
 {
 	NONE = 0,			// Нет
@@ -19,15 +21,28 @@ public enum BonusType
 	SAME_TYPE			// Уничтожает фишки определенного типа
 }
 
+/** Класс фишки. */
 public class Chip : MonoBehaviour, IExplodable
 {
+    /** Префаб анимации взрыва. */
 	public GameObject explosionPrefab;
+    
+    /** Тип фишки. */
 	public ChipType type = ChipType.RED;
+    
+    /** Тип бонуса фишки. */
 	public BonusType bonusType = BonusType.NONE;
-
+    
+    /** Обработчик события окончании анимации взрыва. */
 	private Callback _explodeCallback;
 
-	//
+	/**
+     * Взрывает фишку
+     * 
+     * @param callback обработчик события окончания анимации взрыва фишки
+     * 
+     * @return bool true, если запущена анимация взрыва, иначе false
+     */
 	public bool explode(Callback callback)
 	{
 		_explodeCallback = callback;
@@ -49,7 +64,12 @@ public class Chip : MonoBehaviour, IExplodable
 
 		return true;
 	}
-
+    
+    /**
+     * Обработчик события окончании проигрывания анимации взрыва.
+     * 
+     * @param self взорвавшийся объект
+     */
 	private void _onExplodeAnimationComplete(Object self)
 	{
 		if (_explodeCallback != null) {

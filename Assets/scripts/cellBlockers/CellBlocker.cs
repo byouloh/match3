@@ -1,24 +1,26 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/** Тип блокирующего элемента ячейки. */
 public enum BlockerType
 {
     /** Обычная ячейка. */
     NONE = 0,
     
-    /** Обертка. */
-    WRAP,
-    
-    /** Двойная обертка. */
-    WRAP2,
-    
     /** Цепь. */
     CHAIN,
     
     /** Двойная цепь. */
-    CHAIN2
+    CHAIN2,
+    
+    /** Обертка. */
+    WRAP,
+    
+    /** Двойная обертка. */
+    WRAP2
 };
 
+/** Абстрактный(базовый) класс ячейки. */
 public abstract class CellBlocker : MonoBehaviour, IExplodable
 {
 	/** Обработчик события по окончании взрыва. */
@@ -71,19 +73,34 @@ public abstract class CellBlocker : MonoBehaviour, IExplodable
         
         return false;
     }
-
+    
+    /**
+     * Обработчик события окончании проигрывания анимации взрыва.
+     * 
+     * @param self взорвавшийся объект
+     */
 	private void _onExplodeAnimationComplete(Object self)
 	{
 		if (_explodeCallback != null) {
 			_explodeCallback();
 		}
 	}
-
+    
+    /**
+     * Есть ли у блокирующего элемента следующий за ним блокирующий элемент.
+     * 
+     * @return bool есть ли у блокирующего элемента следующий за ним блокирующий элемент.
+     */
 	public virtual bool hasNext()
 	{
 		return false;
 	}
-
+    
+    /**
+     * Возвращает следующий блокирующий элемент, который нужно создать после текущего.
+     * 
+     * @return BlockerType следующий блокирующий элемент
+     */
 	public virtual BlockerType getNext()
 	{
 		return BlockerType.NONE;
