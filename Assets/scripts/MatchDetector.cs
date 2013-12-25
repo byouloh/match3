@@ -41,11 +41,11 @@ public class MatchDetector
 
                 if (chainLength >= 3) {
                     // Запихиваем все в возвращаемый массив
-                    Row tmpRow = new Row ();
+                    Match tmpMatch = new Match ();
                     for (g = 0; g < chainLength; g++){
-                        tmpRow.Add(_grid.getCell(i, (j + g)));
+                        tmpMatch.Add(_grid.getCell(i, (j + g)));
                     }
-                    explosionLines.Add(tmpRow);
+                    explosionLines.Add(tmpMatch);
                 }
             }
         }
@@ -62,11 +62,11 @@ public class MatchDetector
                 j += (chainLength - 1);
                 if (chainLength >= 3) {
                     // Запихиваем все в возвращаемый массив
-                    Row tmpRow = new Row ();
+                    Match tmpMatch = new Match ();
                     for (g = 0;g < chainLength; g++){
-                        tmpRow.Add(_grid.getCell((j + g), i));
+                        tmpMatch.Add(_grid.getCell((j + g), i));
                     }
-                    explosionLines.Add(tmpRow);
+                    explosionLines.Add(tmpMatch);
                 }
             }
         }
@@ -176,13 +176,13 @@ public class MatchDetector
 
         // если у нас есть три или более в ряд по вертикали
         if (verticalMatch >= 3) {
-            Row tmpRow = new Row();
+            Match tmpMatch = new Match();
 
             for (int i = topX; i <= bottomX ; i++ ) {
-                tmpRow.Add(_grid.getCell(i, cell.y));
+                tmpMatch.Add(_grid.getCell(i, cell.y));
             }
 
-            explosionLines.Add(tmpRow);
+            explosionLines.Add(tmpMatch);
         }
 
         // если у нас есть три или более в ряд по горизонтали 
@@ -190,13 +190,13 @@ public class MatchDetector
 
         // если у нас есть три или более в ряд по вертикали
         if (horisontalMatch >= 3) {
-            Row tmpRow = new Row();
+            Match tmpMatch = new Match();
 
             for (int i = topX; i <= bottomX ; i++ ) {
-                tmpRow.Add( _grid.getCell(i, cell.y));
+                tmpMatch.Add( _grid.getCell(i, cell.y));
             }
 
-            explosionLines.Add(tmpRow);
+            explosionLines.Add(tmpMatch);
         }
 
         //return explosionLines;
