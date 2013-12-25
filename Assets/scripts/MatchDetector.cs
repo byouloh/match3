@@ -83,21 +83,14 @@ public class MatchDetector
         }
 	}
 
-
-	// Update is called once per frame
-	void Update () {
-		
-	}
-
     /**
      *  Метод проверяет все возможные сочетания линий для данной клетки и 
      *  возвращает массив линий которые должны взорватся.
+     * 
+     * @param cell координаты ячейки которую обрабатываем.
      */
     void canCellExplosion(IntVector2 cell) 
     {
-        // Линии которые взорвутся
-
-
         int verticalMatch;
         int horisontalMatch;
 
@@ -106,23 +99,21 @@ public class MatchDetector
         int leftY   = cell.x;
         int rightY  = cell.x;
 
-        bool canUp        = true;
-        bool canDown      = true;
-        bool canLeft      = true;
-        bool canRight     = true;
+        bool canUp    = true;
+        bool canDown  = true;
+        bool canLeft  = true;
+        bool canRight = true;
 
-      
         // Понял что сделано не по феншую, позже переделать так что бы не было повторного повторения кода
         while (true) {
             // Смотрим по вверх
             if (canUp) { // Если в цепочке небыло прерываний
                 if ((topX - 1) >= 0) { // Если мы не дошли до границы сетки
                     if (_grid.getCell((topX - 1), cell.y).getChip().type == _grid.getCell(cell.x, cell.y).getChip().type) {
-                        topX-= 1;
+                        topX -= 1;
                     } else {
                         canUp = false;
                     }
-            
                 }
             }
 
@@ -130,11 +121,10 @@ public class MatchDetector
             if (canDown) { // Если в цепочке небыло прерываний
                 if ((bottomX + 1) <= _grid.getRowCount()) { // Если мы не дошли до границы сетки
                     if (_grid.getCell((bottomX + 1), cell.y).getChip().type == _grid.getCell(cell.x, cell.y).getChip().type) {
-                        bottomX+= 1;
+                        bottomX += 1;
                     } else {
                         canDown = false;
                     }
-                    
                 }
             }
 
@@ -142,11 +132,10 @@ public class MatchDetector
             if (canLeft) { // Если в цепочке небыло прерываний
                 if ((leftY - 1) >= 0) { // Если мы не дошли до границы сетки
                     if (_grid.getCell(cell.x, (leftY - 1)).getChip().type == _grid.getCell(cell.x, cell.y).getChip().type) {
-                        leftY-= 1;
+                        leftY -= 1;
                     } else {
                         canLeft = false;
-                    }
-                    
+                    } 
                 }
             }
             
@@ -154,14 +143,12 @@ public class MatchDetector
             if (canRight) { // Если в цепочке небыло прерываний
                 if ((rightY + 1) <= _grid.getColCount()) { // Если мы не дошли до границы сетки
                     if (_grid.getCell(cell.x, (rightY + 1)).getChip().type == _grid.getCell(cell.x, cell.y).getChip().type) {
-                        rightY+= 1;
+                        rightY += 1;
                     } else {
                         canRight = false;
                     }
-                    
                 }
             }
-
 
             if ((canUp && canDown) && (canLeft && canRight)) {
                 break;
