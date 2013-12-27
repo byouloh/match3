@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class MatchDetector 
 {
     private Grid _grid;
-    Lines explosionLines = null;
+    public Lines explosionLines = null;
 	
     // Use this for initialization
 	void Start ()
@@ -13,60 +13,91 @@ public class MatchDetector
 		
 	}
 
-	void setGrid (ref Grid grid) 
+	public void setGrid (Grid grid) 
     {
 		_grid = grid;
 	}
 
 
     /** Метод проверяет сетку на наличие рядов.*/ 
-	void findMatch() 
+	public void findMatch() 
     {
         int i, j, g;
-        int chainLength = 1;
+        int chainLength;
+        Cell cell1;
+        Cell cell2;
+
+        if (explosionLines != null) {
+            explosionLines.Clear();
+        } else {
+            explosionLines = new Lines();
+        }
 
         // Проверяем по строкам. 
         for (i = 0; i < _grid.getRowCount(); i++) {
-            for (j = 0; i < (_grid.getColCount() - 2); j++) {
-                while (true) {
-                    if (_grid.getCell(i, j).getChip().type == _grid.getCell(i, j + chainLength).getChip().type) {
+            for (j = 0; j < (_grid.getColCount() - 2); j++) {
+                chainLength = 1;
+
+                while ((j + chainLength) < _grid.getColCount())  {
+                    cell1 = _grid.getCell(i, j);
+                    cell2 = _grid.getCell(i, j + chainLength);
+
+                    if ((cell1 != null) && (cell2 != null) && 
+                         (cell1.chip != null) && (cell2.chip != null) &&
+                         (cell1.chip.type == cell2.chip.type)
+                    ) {
                         chainLength++;
-                    } else {
+                    } else {     
                         break;
                     }
                 }
 
-                j += (chainLength - 1);
-
+                //Debug.LogError();
                 if (chainLength >= 3) {
                     // Запихиваем все в возвращаемый массив
                     Match tmpMatch = new Match ();
-                    for (g = 0; g < chainLength; g++){
-                        tmpMatch.Add(_grid.getCell(i, (j + g)));
+                    for (g = j; g < (j + chainLength); g++){
+                        tmpMatch.Add(_grid.getCell(i, g));   
                     }
                     explosionLines.Add(tmpMatch);
                 }
+
+                j += (chainLength - 1);
             }
         }
+
         // Проверяем по столбцам.
-        for (i = 0; i < _grid.getColCount(); i++) {
-            for (j = 0; i < (_grid.getRowCount() - 2); j++) {
-                while (true) {
-                    if (_grid.getCell(j, i).getChip().type == _grid.getCell(j + chainLength, i).getChip().type) {
+        for (j = 0; j < _grid.getColCount(); j++) {
+            for (i = 0; i < (_grid.getRowCount() - 2); i++) {
+                chainLength = 1;
+                
+                while ((i + chainLength) < _grid.getRowCount())  {
+                    cell1 = _grid.getCell(i, j);
+                    cell2 = _grid.getCell(i + chainLength, j);
+                    
+                    if ((cell1 != null) && (cell2 != null) && 
+                        (cell1.chip != null) && (cell2.chip != null) &&
+                        (cell1.chip.type == cell2.chip.type)
+                    ) {
                         chainLength++;
-                    } else {
+                    } else {     
                         break;
                     }
                 }
-                j += (chainLength - 1);
+
+                //Debug.LogError();
                 if (chainLength >= 3) {
                     // Запихиваем все в возвращаемый массив
                     Match tmpMatch = new Match ();
-                    for (g = 0; g < chainLength; g++){
-                        tmpMatch.Add(_grid.getCell((j + g), i));
+
+                    for (g = i; g < (i + chainLength); g++){
+                        tmpMatch.Add(_grid.getCell(g, j));                 
                     }
+
                     explosionLines.Add(tmpMatch);
                 }
+
+                i += (chainLength - 1);
             }
         }
     }
@@ -75,7 +106,7 @@ public class MatchDetector
 	{
         explosionLines = null;
 		
-		if (_grid.getCell(cell1.x, cell1.y).getChip().bonusType == BonusType.SAME_TYPE) {
+		if (_grid.getCell(cell1.x, cell1.y).chip.bonusType == BonusType.SAME_TYPE) {
 		
         } else {
             this.canCellExplosion(cell1);
@@ -109,7 +140,7 @@ public class MatchDetector
             // Смотрим по вверх
             if (canUp) { // Если в цепочке небыло прерываний
                 if ((topX - 1) >= 0) { // Если мы не дошли до границы сетки
-                    if (_grid.getCell((topX - 1), cell.y).getChip().type == _grid.getCell(cell.x, cell.y).getChip().type) {
+                    if (_grid.getCell((topX - 1), cell.y).chip.type == _grid.getCell(cell.x, cell.y).chip.type) {
                         topX -= 1;
                     } else {
                         canUp = false;
@@ -120,7 +151,7 @@ public class MatchDetector
             // Смотрим по вниз 
             if (canDown) { // Если в цепочке небыло прерываний
                 if ((bottomX + 1) <= _grid.getRowCount()) { // Если мы не дошли до границы сетки
-                    if (_grid.getCell((bottomX + 1), cell.y).getChip().type == _grid.getCell(cell.x, cell.y).getChip().type) {
+                    if (_grid.getCell((bottomX + 1), cell.y).chip.type == _grid.getCell(cell.x, cell.y).chip.type) {
                         bottomX += 1;
                     } else {
                         canDown = false;
@@ -131,7 +162,7 @@ public class MatchDetector
             // Смотрим в лево
             if (canLeft) { // Если в цепочке небыло прерываний
                 if ((leftY - 1) >= 0) { // Если мы не дошли до границы сетки
-                    if (_grid.getCell(cell.x, (leftY - 1)).getChip().type == _grid.getCell(cell.x, cell.y).getChip().type) {
+                    if (_grid.getCell(cell.x, (leftY - 1)).chip.type == _grid.getCell(cell.x, cell.y).chip.type) {
                         leftY -= 1;
                     } else {
                         canLeft = false;
@@ -142,7 +173,7 @@ public class MatchDetector
             // Смотрим  в право 
             if (canRight) { // Если в цепочке небыло прерываний
                 if ((rightY + 1) <= _grid.getColCount()) { // Если мы не дошли до границы сетки
-                    if (_grid.getCell(cell.x, (rightY + 1)).getChip().type == _grid.getCell(cell.x, cell.y).getChip().type) {
+                    if (_grid.getCell(cell.x, (rightY + 1)).chip.type == _grid.getCell(cell.x, cell.y).chip.type) {
                         rightY += 1;
                     } else {
                         canRight = false;

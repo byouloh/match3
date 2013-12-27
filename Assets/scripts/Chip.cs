@@ -19,13 +19,19 @@ public enum BonusType
 	SAME_TYPE			// Уничтожает фишки определенного типа
 }
 
-public class Chip : MonoBehaviour, IExplodable
+public class Chip: MonoBehaviour, IExplodable
 {
-	public GameObject explosionPrefab;
-	public ChipType type = ChipType.RED;
-	public BonusType bonusType = BonusType.NONE;
+    /** Префаб анимации взрыва. */
+    public GameObject explosionPrefab;
 
-	private Callback _explodeCallback;
+    /** Тип фишки. */
+    public ChipType type = ChipType.RED;
+         
+    /** Тип бонуса фишки. */
+    public BonusType bonusType = BonusType.NONE;
+
+    /** Обработчик события окончании анимации взрыва. */
+    private Callback _explodeCallback;
 
 	//
 	public bool explode(Callback callback)
