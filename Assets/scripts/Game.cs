@@ -7,7 +7,7 @@ using System.Collections.Generic;
  * 
  * @author Timur Bogotov timur@e-magic.org
  */
-public class Game : MonoBehaviour
+public class Game: MonoBehaviour
 {
 	/** Контейнер для ячеек. */
 	public GameObject cellsRoot;
@@ -24,8 +24,7 @@ public class Game : MonoBehaviour
 	/** Инициализация. */
 	void Start()
 	{
-        loadLevel(1);
-	}
+        loadLevel(1);	}
     
 	void Update()
 	{

@@ -22,7 +22,7 @@ public enum BonusType
 }
 
 /** Класс фишки. */
-public class Chip : MonoBehaviour, IExplodable
+public class Chip: MonoBehaviour, IExplodable
 {
     /** Префаб анимации взрыва. */
 	public GameObject explosionPrefab;

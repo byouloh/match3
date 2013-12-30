@@ -3,11 +3,13 @@ using System.Collections;
 
 public class Cell : MonoBehaviour, IExplodable
 {
-	public Chip chip;
-	public CellBlocker blocker;
+	public Chip chip = null;
+	public CellBlocker blocker = null;
 	private Callback _explodeCallback = null;
 
-	// =======
+	/**
+     * 
+     */
 	public void initialize(CellBlocker blocker, Chip chip)
 	{
 		this.blocker = blocker;
@@ -21,8 +23,8 @@ public class Cell : MonoBehaviour, IExplodable
 	
 	public bool canEnter()
 	{
-		return blocker.canEnter();
-	}
+        return blocker.canEnter();
+    }
 	
 	public bool canPass()
     {
