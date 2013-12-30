@@ -99,7 +99,11 @@ public class DataBase
      * @return bool Возвращает true, если файл БД был инициализирован, иначе false
      */
     public bool initialize(string dbName) {
-        _dbPath = Path.Combine(Application.persistentDataPath, dbName);
+        if (Application.isEditor) {
+            _dbPath = Path.Combine(Application.streamingAssetsPath, dbName);
+        } else {
+            _dbPath = Path.Combine(Application.persistentDataPath, dbName);
+        }
 
         if (!File.Exists(_dbPath)) {
             string sourcePath = Path.Combine(Application.streamingAssetsPath, dbName);
