@@ -23,7 +23,7 @@ public class Level
      * O = ORANGE
      * P = PURPLE
      */
-    public int chipTypes;
+    public uint chipTypes;
     
     /** Количество очков для получения первой звезды. */
     public int needPointsFirstStar;

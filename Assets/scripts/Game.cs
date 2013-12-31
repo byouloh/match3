@@ -21,15 +21,21 @@ public class Game : MonoBehaviour
     /** Информация об уровне. */
     private Level level;
     
+    public static bool blockTime = true;
+    
 	/** Инициализация. */
 	void Start()
 	{
         loadLevel(1);
+        StartCoroutine(grid.generateChips(3));
+        //grid.generateChips(level.chipTypes);
 	}
     
 	void Update()
 	{
-		
+		if (Input.GetMouseButtonUp(0)) {
+            blockTime = false;
+        }
 	}
     
 	void OnGUI()
@@ -66,7 +72,7 @@ public class Game : MonoBehaviour
         this.level                      = new Level();
         this.level.levelId              = levelId;
         this.level.maxMoves             = info.asInt("maxMoves");
-        this.level.chipTypes            = info.asInt("existChips");
+        this.level.chipTypes            = (uint)info.asInt("existChips");
         this.level.needPointsFirstStar  = info.asInt("starPoints1");
         this.level.needPointsSecondStar = info.asInt("starPoints2");
         this.level.needPointsThirdStar  = info.asInt("starPoints3");
