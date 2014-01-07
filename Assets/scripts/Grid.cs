@@ -83,31 +83,98 @@ public class Grid
     }
     
     /**
+     * Удаляет все фишки и ячейки.
+     */
+    public void clear()
+    {
+        for (int i = 0; i < _rowCount; i++) {
+            for (int j = 0; j < _colCount; j++) {
+                if (_cells[i][j] != null) {
+                    if (_cells[i][j].chip != null) {
+                        UnityEngine.Object.Destroy(_cells[i][j].chip.gameObject);
+                    }
+                    
+                    UnityEngine.Object.Destroy(_cells[i][j].gameObject);
+                }
+            }
+        }
+    }
+    
+    /**
      * Заполняет пустые ячейки случайными фишками.
      * 
      * @param chipTypes битовая маска типов фишек, которые присутствуют в уровне
      * Маска имеет вид в двоичном формате 00POYBGR,
      * где позиция буквы соответсвует значению типа фишке в структуре ChipType
      */
-    public IEnumerator generateChips(uint chipTypes)
+    public void generateChips(uint chipTypes)
     {
+        // Массив смещений
+        List<ThreeLine> offset          = ThreeLine.getOffsetList();
+        List<IntVector2> emptyCells     = getEmptyCells();
+        List<IntVector2> unCheckedCells = getEmptyCells();
+        
+        // Случайный тип фишки для формирования тройки(хода)
+        ChipType type = getRandomChipType(chipTypes);
+        
+        while (unCheckedCells.Count > 0) {
+            int itemIndex = Random.Range(0, unCheckedCells.Count);
+            int i = unCheckedCells[itemIndex].y;
+            int j = unCheckedCells[itemIndex].x;
+            
+            if (_cells[i][j] == null || _cells[i][j].chip != null || !_cells[i][j].canEnter()) {
+                unCheckedCells.RemoveAt(itemIndex);
+            } else {
+                for (int ii = 0; ii < offset.Count; ii++) {
+                    if (existInList(emptyCells, offset[ii].aj + j, offset[ii].ai + i) &&
+                        existInList(emptyCells, offset[ii].bj + j, offset[ii].bi + i) &&
+                        existInList(emptyCells, offset[ii].moveJ + j, offset[ii].moveI + i) &&
+                       _cells[offset[ii].moveI + i][offset[ii].moveJ + j].canLeave()
+                    ) {
+                        changeChipType(_cells[offset[ii].ai + i][offset[ii].aj + j], type);
+                        changeChipType(_cells[offset[ii].bi + i][offset[ii].bj + j], type);
+                        changeChipType(_cells[offset[ii].moveI + i][offset[ii].moveJ + j], type);
+                        
+                        fillRandomChips(chipTypes);
+                        
+                        if (canMove()) {
+                            return;
+                        } else {
+                            clearTempChips(emptyCells);
+                        }
+                    }
+                }
+                
+                unCheckedCells.RemoveAt(itemIndex);
+            }
+        }
+        
+        // На карте нет возможного хода, заполняем как получается
+        Debug.LogWarning("Нет хода!");
+        fillRandomChips(chipTypes);
+    }
+    
+    /**
+     * Заполняет пустные ячейки случайными фишками.
+     * 
+     * @param chipTypes битовая маска типов фишек, которые присутствуют в уровне
+     */
+    private void fillRandomChips(uint chipTypes)
+    {
+        List<IntVector2> createdCells = new List<IntVector2>();
         int i;
         int j;
-        List<IntVector2> createdCells = new List<IntVector2>();
         
         for (i = 0; i < _rowCount; i++) {
             for (j = 0; j < _colCount; j++) {
                 Cell cell = getCell(i, j);
                 
                 if (cell != null && cell.chip == null) {
-                    Chip chip;
-                    Debug.Log("create:" + i + ", " + j);
-                    
                     uint ignored = getIgnoredTypes(i, j);
                     uint usingMask = chipTypes & (~ignored);
                     
                     if (usingMask == 0) {
-                        usingMask = (int)ChipType.RED;
+                        usingMask = (uint)getRandomChipType(chipTypes);
                     } else {
                         List<ChipType> usingTypes = getChipTypesFromMask(usingMask);
                         if (usingTypes.Count != 1) {
@@ -124,209 +191,54 @@ public class Grid
                             }
                             
                             if (usingMask == 0) {
-                                usingMask = (int)ChipType.RED;
+                                usingMask = (uint)getRandomChipType(chipTypes);
                             }
                         }
                     }
                     
                     if (usingMask == 0) {
-                        usingMask = (int)ChipType.RED;
-                        
-                        while (Game.blockTime) {
-                            //yield WaitForSeconds(1);
-                            yield return new WaitForSeconds(1.5f);
-                        }
+                        usingMask = (uint)getRandomChipType(chipTypes);
                     }
                     
-                    chip = createChipRandom(usingMask, cell.gameObject);
-                    
-                    cell.chip = chip;
+                    cell.chip = createChipRandom(usingMask, cell.gameObject);
                     
                     createdCells.Add(new IntVector2(j, i));
-                    
-                    /*while (Game.blockTime) {
-                        //yield WaitForSeconds(1);
-                        yield return new WaitForSeconds(0.5f);
-                    }
-                    */
-                    Game.blockTime = true;
                 }
             }
         }
-        
-        // Проверка на существование хотя бы одного хода
-        if (true) {
-            for (i=0; i<3; i++) {
-                while (Game.blockTime) {
-                    //yield WaitForSeconds(1);
-                    yield return new WaitForSeconds(1.5f);
-                }
-                
-                makeOneMove(createdCells, chipTypes);
-            }
-        }
-        
-        yield break;
     }
     
     /**
-     * Меняет фишки, чтобы на у пользователя был хотя бы один ход.
+     * Удаляет фишки в ячейках в указанных ячейках list.
+     * 
+     * @param list список координат(индексы ячеек) ячеек
      */
-    private void makeOneMove(List<IntVector2> createdCells, uint chipTypes)
+    private void clearTempChips(List<IntVector2> list)
     {
-        if (createdCells.Count == 0) {
-            Debug.LogError("Ошибка! Нет созданных ячеек для изменения фишки");
-        }
-        
-        List<IntVector2> unCheckedCells = new List<IntVector2>();
-        unCheckedCells.AddRange(createdCells.GetRange(0, createdCells.Count));
-        
-        while (unCheckedCells.Count > 0) {
-            int item = Random.Range(0, unCheckedCells.Count - 1);
-            int i = unCheckedCells[item].y;
-            int j = unCheckedCells[item].x;
-            
-            uint typeMask = (uint)(1 << (int)_cells[i][j].chip.type);
-            List<ChipType> types = getChipTypesFromMask(chipTypes & (~typeMask));
-            ChipType type = types[Random.Range(0, types.Count - 1)];
-            
-            /**
-               1 2 3
-               4 5 6
-               7 8 9
-            */
-            
-            
-            List<List<IntVector2>> coordList = new List<int, int>();
-            List<int, int> coords = new List<IntVector2>();
-            
-            coords.Add(new IntVector2(j, i + 1));
-            coords.Add(new IntVector2(j - 1, i - 1));
-            coords.Add(new IntVector2(j + 1, i - 1));
-            coords.Add(new IntVector2(j, i - 2));
-            
-            coordList.Add(coords);
-            
-            coords.Add(new IntVector2(j, i - 1));
-            coords.Add(new IntVector2(j - 1, i + 1));
-            coords.Add(new IntVector2(j + 1, i + 1));
-            coords.Add(new IntVector2(j, i + 2));
-            
-            coordList.Add(coords);
-            
-            coords.Add(new IntVector2(j - 1, i));
-            coords.Add(new IntVector2(j + 1, i - 1));
-            coords.Add(new IntVector2(j + 1, i + 1));
-            coords.Add(new IntVector2(j + 2, i));
-            
-            coordList.Add(coords);
-            
-            coords.Add(new IntVector2(j + 1, i));
-            coords.Add(new IntVector2(j - 1, i - 1));
-            coords.Add(new IntVector2(j - 1, i + 1));
-            coords.Add(new IntVector2(j - 2, i));
-            
-            coordList.Add(coords);
-            
-            bool needType;
-            
-            for (int ii=0; ii < coordList.Count; ii++) {
-                coords = coordList[ii];
-                
-                needType = _cells[i + 1][j] != null && _cells[i + 1][j].chip != null &&
-                           _cells[i + 1][j].chip.type == type;
+        for (int i = 0; i < list.Count; i++) {
+            if (_cells[list[i].y][list[i].x].chip != null) {
+                UnityEngine.Object.Destroy(_cells[list[i].y][list[i].x].chip.gameObject);
+                _cells[list[i].y][list[i].x].chip = null;
             }
-            
-            if (i > 0 && i < _rowCount-1) {
-                // 5 8 1|3
-                needType = _cells[i + 1][j] != null && _cells[i + 1][j].chip != null &&
-                                _cells[i + 1][j].chip.type == type;
-                
-                if ((needType || existInList(createdCells, j, i+1)) &&
-                    _cells[i - 1][j] != null && _cells[i - 1][j].canEnter()
-                ) {
-                    if (!needType) {
-                        changeChipType(_cells[i + 1][j], type);
-                        
-                        if (canMove()) {
-                            return;
-                        }
-                    }
-                    
-                    if (j > 0 && existInList(createdCells, j - 1, i - 1) &&
-                        _cells[i - 1][j - 1].chip.type != type
-                    ) {
-                        changeChipType(_cells[i - 1][j - 1], type);
-                        
-                        if (canMove()) {
-                            return;
-                        }
-                    } else
-                    if (j < _colCount - 1 && existInList(createdCells, j + 1, i - 1) &&
-                        _cells[i + 1][j - 1].chip.type != type
-                    ) {
-                        changeChipType(_cells[i + 1][j - 1], type);
-                        
-                        if (canMove()) {
-                            return;
-                        }
-                    } else
-                    if (i > 1 && existInList(createdCells, j, i - 2) &&
-                        _cells[i - 2][j].chip.type != type
-                    ) {
-                        changeChipType(_cells[i - 2][j], type);
-                        
-                        if (canMove()) {
-                            return;
-                        }
-                    }
-                }
-                
-                // 5 2 7|9
-                needType = _cells[i + 1][j] != null && _cells[i + 1][j].chip != null &&
-                    _cells[i + 1][j].chip.type == type;
-                
-                if ((needType || existInList(createdCells, j, i+1)) &&
-                    _cells[i - 1][j] != null && _cells[i - 1][j].canEnter()
-                    ) {
-                    if (!needType) {
-                        changeChipType(_cells[i + 1][j], type);
-                        
-                        if (canMove()) {
-                            return;
-                        }
-                    }
-                    
-                    if (j > 0 && existInList(createdCells, j - 1, i - 1) &&
-                        _cells[i - 1][j - 1].chip.type != type
-                        ) {
-                        changeChipType(_cells[i - 1][j - 1], type);
-                        
-                        if (canMove()) {
-                            return;
-                        }
-                    } else
-                        if (j < _colCount - 1 && existInList(createdCells, j + 1, i - 1) &&
-                            _cells[i + 1][j - 1].chip.type != type
-                           ) {
-                        changeChipType(_cells[i + 1][j - 1], type);
-                        
-                        if (canMove()) {
-                            return;
-                        }
-                    } else
-                        if (i > 1 && existInList(createdCells, j, i - 2) &&
-                            _cells[i - 2][j].chip.type != type
-                           ) {
-                        changeChipType(_cells[i - 2][j], type);
-                        
-                        if (canMove()) {
-                            return;
-                        }
-                    }
+        }
+    }
+    
+    /**
+     * Возвращает список пустых ячеек.
+     */
+    private List<IntVector2> getEmptyCells()
+    {
+        List<IntVector2> res = new List<IntVector2>();
+        
+        for (int i = 0; i < _rowCount; i++) {
+            for (int j = 0; j < _colCount; j++) {
+                if (_cells[i][j] != null && _cells[i][j].chip == null) {
+                    res.Add(new IntVector2(j, i));
                 }
             }
         }
+        
+        return res;
     }
     
     /**
@@ -334,7 +246,8 @@ public class Grid
      */
     private bool canMove()
     {
-        return false;
+        // TODO: вставить здесь алгоритм, который сделал Ислам
+        return (Random.Range(0, 100) > 90);
     }
     
     /**
@@ -345,8 +258,16 @@ public class Grid
      */
     private void changeChipType(Cell cell, ChipType type)
     {
-        GameObject parent = cell.chip.transform.parent.gameObject;
-        UnityEngine.Object.Destroy(cell.chip);
+        GameObject parent;
+        
+        if (cell.chip == null) {
+            parent = cell.gameObject;
+        } else {
+            parent = cell.chip.transform.parent.gameObject;
+            UnityEngine.Object.Destroy(cell.chip.gameObject);
+            cell.chip = null;
+        }
+        
         cell.chip = ChipFactory.createNew(type, BonusType.NONE, parent);
     }
     
@@ -390,7 +311,6 @@ public class Grid
             _cells[i][j-1].chip.bonusType != BonusType.SAME_TYPE &&
             _cells[i][j-2].chip.type == _cells[i][j-1].chip.type
         ) {
-            //Debug.Log("ignore left: " + (int)_cells[i][j-1].chip.type);
             res |= 1 << (int)_cells[i][j-1].chip.type;
         }
         
@@ -400,7 +320,6 @@ public class Grid
             _cells[i][j+1].chip.bonusType != BonusType.SAME_TYPE &&
             _cells[i][j+2].chip.type == _cells[i][j+1].chip.type
         ) {
-            //Debug.Log("ignore right: " + (int)_cells[i][j+1].chip.type);
             res |= 1 << (int)_cells[i][j+1].chip.type;
         }
         
@@ -410,7 +329,6 @@ public class Grid
             _cells[i-1][j].chip.bonusType != BonusType.SAME_TYPE &&
             _cells[i-2][j].chip.type == _cells[i-1][j].chip.type
         ) {
-            //Debug.Log("ignore top: " + (int)_cells[i-1][j].chip.type);
             res |= 1 << (int)_cells[i-1][j].chip.type;
         }
         
@@ -420,7 +338,6 @@ public class Grid
             _cells[i+1][j].chip.bonusType != BonusType.SAME_TYPE &&
             _cells[i+2][j].chip.type == _cells[i+1][j].chip.type
         ) {
-            //Debug.Log("ignore bottom: " + (int)_cells[i+1][j].chip.type);
             res |= 1 << (int)_cells[i+1][j].chip.type;
         }
         
@@ -430,7 +347,6 @@ public class Grid
             _cells[i][j+1].chip.bonusType != BonusType.SAME_TYPE &&
             _cells[i][j-1].chip.type == _cells[i][j+1].chip.type
         ) {
-            //Debug.Log("ignore left: " + (int)_cells[i][j-1].chip.type);
             res |= 1 << (int)_cells[i][j-1].chip.type;
         }
         
@@ -440,13 +356,18 @@ public class Grid
             _cells[i+1][j].chip.bonusType != BonusType.SAME_TYPE &&
             _cells[i-1][j].chip.type == _cells[i+1][j].chip.type
         ) {
-            //Debug.Log("ignore left: " + (int)_cells[i][j-1].chip.type);
             res |= 1 << (int)_cells[i-1][j].chip.type;
         }
         
         return (uint)res;
     }
     
+    /**
+     * Создает фишку со случайным типом.
+     * 
+     * @param chipTypes маска используемых фишек
+     * @parent контейнер для фишки
+     */
     private Chip createChipRandom(uint chipTypes, GameObject parent)
     {
         List<ChipType> usingTypes = getChipTypesFromMask(chipTypes);
@@ -454,12 +375,30 @@ public class Grid
         if (usingTypes.Count == 0) {
             return null;
         } else {
-            
-            return ChipFactory.createNew(usingTypes[Random.Range(0, usingTypes.Count - 1)],
+            return ChipFactory.createNew(usingTypes[Random.Range(0, usingTypes.Count)],
                                          BonusType.NONE, parent);
         }
     }
     
+    /**
+     * Возвращает случайный тип фишки по заданной маске.
+     * 
+     * @param chipTypes маска используемых фишек
+     * 
+     * @return ChipType случайный тип фишки
+     */
+    private ChipType getRandomChipType(uint chipTypes)
+    {
+        List<ChipType> usingTypes = getChipTypesFromMask(chipTypes);
+        
+        return usingTypes[Random.Range(0, usingTypes.Count)];
+    }
+    
+    /**
+     * Формирует массив типов фишек из маски.
+     * 
+     * @param chipsMask маска фишек
+     */
     private List<ChipType> getChipTypesFromMask(uint chipsMask)
     {
         List<ChipType> usingTypes = new List<ChipType>();
@@ -478,5 +417,82 @@ public class Grid
         }
         
         return usingTypes;
+    }
+}
+
+/**
+ * Класс, в котором хранится информация о ряде(тройке фишек).
+ */
+class ThreeLine
+{
+    /** Номер строки на котором стоит первая фишка*/
+    public int ai;
+    
+    /** Номер столбца на котором стоит первая фишка*/
+    public int aj;
+    
+    /** Номер строки на котором стоит вторая фишка*/
+    public int bi;
+    
+    /** Номер столбца на котором стоит вторая фишка*/
+    public int bj;
+    
+    /** Номер строки на котором стоит перемещаемая фишка*/
+    public int moveI;
+    
+    /** Номер столбца на котором стоит перемещаемая фишка*/
+    public int moveJ;
+    
+    /**
+     * Конструктор.
+     * 
+     * @param ai номер строки первого элемента
+     * @param aj номер столбца первого элемента
+     * @param bi номер строки второго элемента
+     * @param bj номер столбца второго элемента
+     * @param moveI номер строки перемещаемого элемента
+     * @param moveJ номер столбца перемещаемого элемента
+     */
+    public ThreeLine(int ai, int aj, int bi, int bj, int moveI, int moveJ)
+    {
+        this.ai = ai;
+        this.aj = aj;
+        this.bi = bi;
+        this.bj = bj;
+        this.moveI = moveI;
+        this.moveJ = moveJ;
+    }
+    
+    /**
+     * Возвращает список смещений координат, которые образуют ход.
+     * 
+     * @return List<ThreeLine> список смещений
+     */
+    public static List<ThreeLine> getOffsetList()
+    {
+        List<ThreeLine> offset = new List<ThreeLine>();
+        
+        offset.Add(new ThreeLine(-1, 0, -2, 0, 0, -1));
+        offset.Add(new ThreeLine(-1, 0, -2, 0, 0, 1));
+        offset.Add(new ThreeLine(-1, 0, -2, 0, -1, 0));
+        
+        offset.Add(new ThreeLine(1, 0, 2, 0, 0, -1));
+        offset.Add(new ThreeLine(1, 0, 2, 0, 0, 1));
+        offset.Add(new ThreeLine(1, 0, 2, 0, 1, 0));
+        
+        offset.Add(new ThreeLine(0, -1, 0, -2, -1, 0));
+        offset.Add(new ThreeLine(0, -1, 0, -2, 1, 0));
+        offset.Add(new ThreeLine(0, -1, 0, -2, 0, 1));
+        
+        offset.Add(new ThreeLine(0, 1, 0, 2, -1, 0));
+        offset.Add(new ThreeLine(0, 1, 0, 2, 1, 0));
+        offset.Add(new ThreeLine(0, 1, 0, 2, 0, -1));
+        
+        offset.Add(new ThreeLine(0, -1, 0, 1, -1, 0));
+        offset.Add(new ThreeLine(0, -1, 0, 1, 1, 0));
+        offset.Add(new ThreeLine(-1, 0, 1, 0, 0, -1));
+        offset.Add(new ThreeLine(-1, 0, 1, 0, 0, 1));
+        
+        return offset;
     }
 }

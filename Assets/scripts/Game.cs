@@ -21,21 +21,16 @@ public class Game : MonoBehaviour
     /** Информация об уровне. */
     private Level level;
     
-    public static bool blockTime = true;
-    
 	/** Инициализация. */
 	void Start()
 	{
-        loadLevel(1);
-        StartCoroutine(grid.generateChips(3));
-        //grid.generateChips(level.chipTypes);
+        loadLevel(3);
+        grid.generateChips(level.chipTypes);
 	}
     
 	void Update()
 	{
-		if (Input.GetMouseButtonUp(0)) {
-            blockTime = false;
-        }
+		
 	}
     
 	void OnGUI()
@@ -106,7 +101,7 @@ public class Game : MonoBehaviour
                 } else {
                     GameObject cell = (GameObject)UnityEngine.Object.Instantiate(cellPrefab);
                     cell.transform.parent   = cellsRoot.transform;
-                    cell.transform.position = new Vector3(Grid.CELL_WIDTH * j, -Grid.CELL_HEIGHT * i, 0);
+                    cell.transform.localPosition = new Vector3(Grid.CELL_WIDTH * j, -Grid.CELL_HEIGHT * i, 0);
                     
                     Cell c = cell.GetComponent<Cell>();
                     
