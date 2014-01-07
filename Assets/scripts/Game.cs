@@ -28,13 +28,33 @@ public class Game: MonoBehaviour
     
 	void Update()
 	{
-		
+      
+  
 	}
     
 	void OnGUI()
 	{
-		
+        if (GUI.Button(new Rect(Screen.width / 2 - 300, Screen.height / 2 + 200, 100, 40), "help")) {
+            // Запуск поиска подсказки
+            this.help();
+        }
 	}
+
+    void help () 
+    {
+        MatchDetector a = new MatchDetector();
+        a.setGrid(grid);
+        Match c = a.findHelpMatch();
+        Debug.Log("Нашли подсказски help  :");
+        if (c == null) {
+            Debug.Log("null ");
+        } else {
+            Debug.Log("размер массива: " + c.Count);
+            for (int i = 0; i < c.Count; i++) {
+                Debug.Log(" тип фишки =" + (int)c [i].chip.type);
+            }
+        }
+    }
     
     /**
      * Загружает уровень.
@@ -131,7 +151,7 @@ public class Game: MonoBehaviour
                             break;
                             
                         default:
-                            Debug.LogError("Ошибка! Неверный тип ячейки");
+                            Debug.LogError("Ошибка! Неверный тип ячейки. Номер ячейки : i = " + i + ", j = " + j );
                             blocker = BlockFactory.createNew(BlockerType.NONE, c.gameObject);
                             break;
                     }
