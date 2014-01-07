@@ -24,7 +24,9 @@ public class Game: MonoBehaviour
 	/** Инициализация. */
 	void Start()
 	{
-        loadLevel(1);	}
+        loadLevel(3);
+        grid.generateChips(level.chipTypes);
+	}
     
 	void Update()
 	{
@@ -65,7 +67,7 @@ public class Game: MonoBehaviour
         this.level                      = new Level();
         this.level.levelId              = levelId;
         this.level.maxMoves             = info.asInt("maxMoves");
-        this.level.chipTypes            = info.asInt("existChips");
+        this.level.chipTypes            = (uint)info.asInt("existChips");
         this.level.needPointsFirstStar  = info.asInt("starPoints1");
         this.level.needPointsSecondStar = info.asInt("starPoints2");
         this.level.needPointsThirdStar  = info.asInt("starPoints3");
@@ -99,7 +101,7 @@ public class Game: MonoBehaviour
                 } else {
                     GameObject cell = (GameObject)UnityEngine.Object.Instantiate(cellPrefab);
                     cell.transform.parent   = cellsRoot.transform;
-                    cell.transform.position = new Vector3(Grid.CELL_WIDTH * j, -Grid.CELL_HEIGHT * i, 0);
+                    cell.transform.localPosition = new Vector3(Grid.CELL_WIDTH * j, -Grid.CELL_HEIGHT * i, 0);
                     
                     Cell c = cell.GetComponent<Cell>();
                     

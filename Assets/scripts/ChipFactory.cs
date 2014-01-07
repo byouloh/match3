@@ -89,9 +89,9 @@ public static class ChipFactory
 			obj.transform.parent = root.transform;
 			obj.transform.position = root.transform.position;
 		}
-
-		Sprite sprite = Resources.Load<Sprite>("textures/chipSprites/" + spriteName);
-
+        
+        Sprite sprite = Resources.Load<Sprite>("textures/chipSprites/" + spriteName);
+        
 		if (sprite == null) {
 			UnityEngine.Object.Destroy(obj);
 			throw new System.NullReferenceException("Ошибка! Не удалось загрузить префаб: " + spriteName);
