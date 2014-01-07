@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 /** Тип прохода. */
-public enum PassType:int
+public enum PassType: int
 {
     TOP_LEFT = 0,
     TOP_RIGHT,
@@ -12,12 +12,29 @@ public enum PassType:int
     BOTTOM_RIGHT
 }
 
+/**
+ * 
+ * 
+ * @author 
+ */
 public class MatchDetector
 {
+    /** 
+     * Ссылки на обрабатываемую сетку клеток.
+     */
     private Grid _grid;
+
+    /** 
+     * Массив взрывающихся линий . 
+     */
     public Lines explosionLines = null;
 
-	public void setGrid (Grid grid) 
+    /**
+     * Вводим сетку.
+     * 
+     * @param grid
+     */
+	public void setGrid(Grid grid) 
     {
         _grid = grid;
 	}
@@ -47,8 +64,8 @@ public class MatchDetector
                     cell2 = _grid.getCell(i, j + chainLength);
 
                     if ((cell1 != null) && (cell2 != null) && 
-                         (cell1.chip != null) && (cell2.chip != null) &&
-                         (cell1.chip.type == cell2.chip.type)
+                        (cell1.chip != null) && (cell2.chip != null) &&
+                        (cell1.chip.type == cell2.chip.type)
                     ) {
                         chainLength++;
                     } else {     
@@ -59,10 +76,12 @@ public class MatchDetector
                 //Debug.LogError();
                 if (chainLength >= 3) {
                     // Запихиваем все в возвращаемый массив
-                    Match tmpMatch = new Match ();
+                    Match tmpMatch = new Match();
+
                     for (g = j; g < (j + chainLength); g++){
                         tmpMatch.Add(_grid.getCell(i, g));   
                     }
+
                     explosionLines.Add(tmpMatch);
                 }
 
@@ -92,7 +111,7 @@ public class MatchDetector
                 //Debug.LogError();
                 if (chainLength >= 3) {
                     // Запихиваем все в возвращаемый массив
-                    Match tmpMatch = new Match ();
+                    Match tmpMatch = new Match();
 
                     for (g = i; g < (i + chainLength); g++){
                         tmpMatch.Add(_grid.getCell(g, j));                 
@@ -127,13 +146,14 @@ public class MatchDetector
     public Match findHelpMatch()
     {
         System.Random r   = new System.Random();
-        PassType passType = (PassType)0;// (PassType)r.Next(3);
+        PassType passType = (PassType)r.Next(4); // Случайный тип прохода
         int i, j;
         Lines tmpLines;
 
         switch (passType) {
             case PassType.TOP_LEFT:
-                Debug.LogError ("Вошли TOP_LEFT");
+                Debug.Log("Вошли TOP_LEFT");
+
                 for (i = 0; i < _grid.getRowCount(); i++) {
                     for (j = 0; j < _grid.getColCount(); j++) {
                         Debug.Log("Обрабатываемая клетка i = " + i + " j = " + j);
@@ -145,12 +165,15 @@ public class MatchDetector
                         }
                     }
                 }
+
                 break;
+            
             case PassType.TOP_RIGHT:
-                Debug.Log ("Вошли TOP_RIGHT");
+                Debug.Log("Вошли TOP_RIGHT");
+
                 for (j = _grid.getRowCount() - 1; j > 0; j--) {
                     for (i = 0; i < _grid.getColCount(); i++) {
-                        Debug.LogError("Обрабатываемая клетка i = " + i + " j = " + j);
+                        Debug.Log("Обрабатываемая клетка i = " + i + " j = " + j);
                         tmpLines = getFormedLines(new IntVector2(i, j));
                         
                         if (tmpLines.Count > 0) {
@@ -158,12 +181,15 @@ public class MatchDetector
                         } 
                     }
                 }
+
                 break;
+            
             case PassType.BOTTOM_LEFT:
-                Debug.Log ("Вошли BOTTOM_LEFT");
+                Debug.Log("Вошли BOTTOM_LEFT");
+
                 for (j = 0; j < _grid.getRowCount(); j++) {
                     for (i = _grid.getColCount() - 1; i > 0 ; i--) {
-                        Debug.LogError("Обрабатываемая клетка i = " + i + " j = " + j);
+                        Debug.Log("Обрабатываемая клетка i = " + i + " j = " + j);
                         tmpLines = getFormedLines(new IntVector2(i, j));
                         
                         if (tmpLines.Count > 0) {
@@ -171,12 +197,15 @@ public class MatchDetector
                         }
                     }
                 }
+
                 break;
+            
             case PassType.BOTTOM_RIGHT:
-                Debug.Log ("Вошли BOTTOM_RIGHT");
+                Debug.Log("Вошли BOTTOM_RIGHT");
+
                 for (i = _grid.getColCount() - 1; i > 0; i--) {
                     for (j = _grid.getRowCount() - 1; j > 0; j--) {
-                        Debug.LogError("Обрабатываемая клетка i = " + i + " j = " + j);
+                        Debug.Log("Обрабатываемая клетка i = " + i + " j = " + j);
                         tmpLines = getFormedLines(new IntVector2(i, j));
                         
                         if (tmpLines.Count > 0) {
@@ -184,31 +213,40 @@ public class MatchDetector
                         }
                     }
                 }
+
                 break;
+            
             default:
                 Debug.LogError("Ошибка! Выбран неправильный тип прохода");
                 break;
         }
 
         return new Match();
-
     }
 
-    /** Из линий возвращает массив уникальных точек. */
+    /**
+     * Из линий возвращает массив уникальных точек.
+     * 
+     * @param lines 
+     */
     public Match getUniqueCells(Lines lines)
     {
         Match match = new Match();
+
         for (int i = 0; i < lines.Count; i++) {
             for (int j = 0; j < lines[i].Count; j++) {
-                match.Add(lines[i][j]);
+                if (!match.Contains(lines[i][j])) {
+                    match.Add(lines[i][j]);
+                }
             }
         }
+
         return match;
     }
 
     /**
      *  Метод проверяет все возможные сочетания линий для данной клетки и 
-     *  возвращает массив линий которые должны взорватся.
+     *  возвращает массив линий которые образуют mathc.
      * 
      * @param cell координаты ячейки которую обрабатываем.
      */
@@ -220,12 +258,12 @@ public class MatchDetector
         // Если фишки нету или клетки
         if ((_grid.getCell(cell.x, cell.y) == null) ||
             (_grid.getCell(cell.x, cell.y).chip == null)
-           ) {
+        ) {
             Debug.Log("клетки или фишки нет [" + cell.x + ", " + cell.y + "]");
             return new Lines();
         }
-        for (int i = 0; i < 4; i++) {
 
+        for (int i = 0; i < 4; i++) {
             Debug.Log("направление " + i + "        0 - up, 1 - down, 2 - left, 3 - rigth   для клетки[" + cell.x + ", " + cell.y + "]");
             lines = getFormedLinesForSide(cell, directions[i]);
 
@@ -315,8 +353,8 @@ public class MatchDetector
         }
         
         while (true) {
-            // Смотрим по вверх
-            if (canUp) { // Если в цепочке небыло прерываний
+            // Смотрим вверх
+            if (canUp) { 
                 if (((topX - 1) >= 0) && 
                     (_grid.getCell((topX - 1), cellCoordinates.y) != null) &&
                     (_grid.getCell((topX - 1), cellCoordinates.y).chip != null) && 
@@ -328,8 +366,8 @@ public class MatchDetector
                 }
             }
 
-            // Смотрим по вниз 
-            if (canDown) { // Если в цепочке небыло прерываний
+            // Смотрим вниз 
+            if (canDown) { 
                 if (((bottomX + 1) < _grid.getRowCount()) &&
                     (_grid.getCell((bottomX + 1), cellCoordinates.y) != null) &&
                     (_grid.getCell((bottomX + 1), cellCoordinates.y).chip != null) &&
@@ -339,11 +377,10 @@ public class MatchDetector
                 } else {
                     canDown = false;
                 }
-
             }
 
-            // Смотрим в лево
-            if (canLeft) { // Если в цепочке небыло прерываний
+            // Смотрим влево
+            if (canLeft) { 
                 if (((leftY - 1) >= 0) && 
                     (_grid.getCell(cellCoordinates.x, (leftY - 1)) != null) &&
                     (_grid.getCell(cellCoordinates.x, (leftY - 1)).chip != null) &&
@@ -354,13 +391,12 @@ public class MatchDetector
                     canLeft = false;
                 } 
             }
-            
-            // Смотрим  в право 
-            if (canRight) { // Если в цепочке небыло прерываний
+            // Смотрим  вправо 
+            if (canRight) { 
                 if (((rightY + 1) < _grid.getColCount()) && 
                     (_grid.getCell(cellCoordinates.x, (rightY + 1)) != null) &&
                     (_grid.getCell(cellCoordinates.x, (rightY + 1)).chip != null) &&
-                    (_grid.getCell(cell.x, (rightY + 1)).chip.type == useCell)
+                    (_grid.getCell(cellCoordinates.x, (rightY + 1)).chip.type == useCell)
                 ) {
                     rightY += 1;
                 } else {
@@ -384,9 +420,7 @@ public class MatchDetector
                 if (i != cellCoordinates.x) {
                     Debug.Log("клетка i вертикали " + (i - topX + 1));
                     Debug.Log("x = " + i + " y = " + (cell.y + offset.y));
-                    tmpMatch.Add(_grid.getCell(i, cell.y));
-                } else {
-                    continue;
+                    tmpMatch.Add(_grid.getCell(i, (cell.y + offset.y)));
                 }
             }
             Debug.Log("x = " + cell.x + " y = " + cell.y);
@@ -405,9 +439,7 @@ public class MatchDetector
                 if (i != cellCoordinates.y) {
                     Debug.Log("клетка i по горизонтали " + (i - leftY + 1));
                     Debug.Log("x = " + (cell.x + offset.x) + " y = " + i);
-                    tmpMatch.Add(_grid.getCell(i, cell.y));
-                } else {
-                    continue;
+                    tmpMatch.Add(_grid.getCell((cell.x + offset.x), i));
                 }
             }
             Debug.Log("x = " + cell.x + " y = " + cell.y);

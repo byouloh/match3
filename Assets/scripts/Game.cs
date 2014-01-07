@@ -45,6 +45,7 @@ public class Game: MonoBehaviour
         MatchDetector a = new MatchDetector();
         a.setGrid(grid);
         Match c = a.findHelpMatch();
+
         Debug.Log("Нашли подсказски help  :");
         if (c == null) {
             Debug.Log("null ");
@@ -52,6 +53,7 @@ public class Game: MonoBehaviour
             Debug.Log("размер массива: " + c.Count);
             for (int i = 0; i < c.Count; i++) {
                 Debug.Log(" тип фишки =" + (int)c [i].chip.type);
+                c [i].chip.GetComponent<Animator>().SetTrigger("flicker");
             }
         }
     }
