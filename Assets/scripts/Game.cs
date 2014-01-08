@@ -54,6 +54,9 @@ public class Game: MonoBehaviour
     /** Класс, которорый перемешает фишки на уровне. */
     private GridReshuffler _gridReshuffler;
     
+    /** Класс, которые переставляет две фишки. */
+    private ChipSwapper _chipSwapper;
+    
     /** Инициализация. */
 	void Start()
 	{
@@ -64,6 +67,11 @@ public class Game: MonoBehaviour
         _matchDetector.setGrid(_grid);
         _strokeTime = Time.time;
         _lastHelpTime = 0;
+        
+        Vector3 offset = Camera.main.WorldToScreenPoint(cellsRoot.transform.position + new Vector3(-Grid.CELL_WIDTH * 0.5f, Grid.CELL_HEIGHT * 0.5f, 0));
+        Vector3 cellSize = offset - Camera.main.WorldToScreenPoint(cellsRoot.transform.position + new Vector3(Grid.CELL_WIDTH * 0.5f, -Grid.CELL_HEIGHT * 0.5f, 0));
+        
+        _chipSwapper = new ChipSwapper(_grid, new IntVector2((int)offset.x, (int)offset.y), (int)Mathf.Abs(cellSize.x), (int)Mathf.Abs(cellSize.y));
     }
     
 	void Update()
@@ -78,6 +86,8 @@ public class Game: MonoBehaviour
             }
         }
         
+        _chipSwapper.step(Time.deltaTime);
+        
         if (((Time.time - _strokeTime) > HELP_TIMEOUT) && ((Time.time - _lastHelpTime) > SHOW_HELP_INTERVAL)) {
             if (_helpMatch != null) {
                 for (int i = 0; i < _helpMatch.Count; i++) {
@@ -86,9 +96,10 @@ public class Game: MonoBehaviour
 
                 _lastHelpTime = Time.time;
             } else {
-                Debug.LogError ("Линий нет"); // TODO убрать 
+                //Debug.LogError ("Линий нет"); // TODO убрать 
             }
-        }	}
+        }
+    }
     
     void OnGUI()
 	{
@@ -213,7 +224,7 @@ public class Game: MonoBehaviour
                         }
                     }
                     
-                    c.initialize(blocker, chip);
+                    c.initialize(blocker, chip, new IntVector2(j, i));
                     
                     _grid.setCell(i, j, c);
                 }

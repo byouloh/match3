@@ -1,36 +1,61 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/** Класс ячейки. */
 public class Cell : MonoBehaviour, IExplodable
 {
+    /** Фишка. */
 	public Chip chip = null;
+    
+    /** Блокирующий элемент. */
 	public CellBlocker blocker = null;
+    
+    /** Обработчик события по окончании взрыва. */
+    
 	private Callback _explodeCallback = null;
+    
+    /** Матричные координаты(номер строки и столбца) */
+    public IntVector2 position;
 
 	/**
+     * Инициализирует ячейку.
      * 
+     * @param blocker блокирующий элемент
+     * @param chip фишка ячейки(может быть null)
+     * @param position матричные координаты(номер строки и столбца)
      */
-	public void initialize(CellBlocker blocker, Chip chip)
+	public void initialize(CellBlocker blocker, Chip chip, IntVector2 position)
 	{
-		this.blocker = blocker;
-		this.chip    = chip;
+		this.blocker  = blocker;
+		this.chip     = chip;
+        this.position = position;
 	}
-
+    
+    /** Может ли фишка покинуть ячейку. */
 	public bool canLeave()
 	{
 		return blocker.canLeave();
 	}
 	
+    /** Может ли фишка войти в ячейку. */
 	public bool canEnter()
 	{
         return blocker.canEnter();
     }
 	
+    /** Может ли фишка пройти сквозь ячейку. */
 	public bool canPass()
     {
 		return blocker.canPass();
     }
-
+    
+    /**
+     * Взрывает блокирующий элемент, если есть, при повторном вызове взрывает фишку, если есть.
+     * 
+     * @param callback обработчик событий по окончании взрыва
+     * 
+     * @return true, если началась анимация взрыва, иначе false
+     */
 	public bool explode(Callback callback)
 	{
 		_explodeCallback = callback;
@@ -75,7 +100,10 @@ public class Cell : MonoBehaviour, IExplodable
 
 		return true;
 	}
-
+    
+    /**
+     * Обработчик события окончании проигрывания анимации взрыва.
+     */
     private void _onExplodeComplete()
 	{
 		if (_explodeCallback != null) {
