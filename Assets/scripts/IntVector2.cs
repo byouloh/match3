@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 
 /**
@@ -6,7 +6,7 @@ using System.Collections;
  * 
  * @author Islam Zhambeev islam@e-magic.org
  */
-public class IntVector2
+public struct IntVector2
 {
     public int x;
     public int y;
@@ -15,7 +15,7 @@ public class IntVector2
     {
         get
         {
-            return new IntVector2(0, -1);
+            return new IntVector2(-1, 0);
         }
     }
 
@@ -23,15 +23,16 @@ public class IntVector2
     {
         get 
         {
-            return new IntVector2 (0, 1);
+            return new IntVector2 (1, 0);
         }
     }
 
     public static IntVector2 left 
     {
+
         get 
         {
-            return new IntVector2(-1, 0);
+            return new IntVector2(0, -1);
         }
     }
 
@@ -39,7 +40,15 @@ public class IntVector2
     {
         get 
         {
-            return new IntVector2(1, 0);
+            return new IntVector2(0, 1);
+        }
+    }
+
+    public static IntVector2 zero
+    {
+        get
+        {
+            return new IntVector2(0, 0);
         }
     }
 
@@ -49,6 +58,11 @@ public class IntVector2
         this.y = y;
     }
 
+    /**
+     * Позваляет обращатся к значениям и менять их по индексу.
+     * 
+     * @param index Индекс элемента
+     */
     public int this[int index]
     {
         get
