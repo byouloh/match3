@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 /**
- * Основной класс игры
+ * Основной класс игры.
  * 
  * @author Timur Bogotov timur@e-magic.org
  */
@@ -21,19 +21,31 @@ public class Game: MonoBehaviour
     /** Информация об уровне. */
     private Level level;
     
-	/** Инициализация. */
+    /** Класс, которорый перемешает фишки на уровне. */
+    private GridReshuffler _gridReshuffler;
+    
+    /** Инициализация. */
 	void Start()
 	{
-        loadLevel(3);
+        _gridReshuffler = new GridReshuffler();
+        loadLevel(1);
         grid.generateChips(level.chipTypes);
 	}
     
 	void Update()
 	{
-		
+        if (Input.GetKey("p")) {
+            remixGrid();
+        }
+        
+        if (_gridReshuffler.isShuffle()) {
+            if (_gridReshuffler.step(Time.deltaTime)) {
+                //Debug.Log("Mix Complete");
+            }
+        }
 	}
     
-	void OnGUI()
+    void OnGUI()
 	{
 		
 	}
@@ -67,7 +79,7 @@ public class Game: MonoBehaviour
         this.level                      = new Level();
         this.level.levelId              = levelId;
         this.level.maxMoves             = info.asInt("maxMoves");
-        this.level.chipTypes            = (uint)info.asInt("existChips");
+        this.level.chipTypes            = 63;// (uint)info.asInt("existChips");
         this.level.needPointsFirstStar  = info.asInt("starPoints1");
         this.level.needPointsSecondStar = info.asInt("starPoints2");
         this.level.needPointsThirdStar  = info.asInt("starPoints3");
@@ -158,5 +170,16 @@ public class Game: MonoBehaviour
         // Отцентровываем контейнер для ячеек
         cellsRoot.transform.position = new Vector3(Grid.CELL_WIDTH*0.5f - Grid.CELL_WIDTH * grid.getColCount()*0.5f,
                                                    -Grid.CELL_HEIGHT*0.5f + Grid.CELL_HEIGHT * grid.getRowCount()*0.5f, 0);
+    
+    }
+    
+    /**
+     * Начинает процесс перетасовки фишек.
+     */
+    public void remixGrid()
+    {
+        if (!_gridReshuffler.isShuffle()) {
+            _gridReshuffler.start(grid, level.chipTypes, new Vector3(0, 0, 0));
+        }
     }
 }
