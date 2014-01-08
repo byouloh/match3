@@ -9,6 +9,16 @@ using System.Collections.Generic;
  */
 public class Game: MonoBehaviour
 {
+    /** 
+     * Время ожидания подсказски .
+     */
+    const int SHOW_HELP_INTERVAL = 4;
+
+    /**
+     * Интервал между ходом и показом подсказски. 
+     */
+    const int HELP_TIMEOUT = 13;
+
 	/** Контейнер для ячеек. */
 	public GameObject cellsRoot;
     
@@ -16,48 +26,69 @@ public class Game: MonoBehaviour
 	public GameObject cellPrefab;
     
 	/** Матрица ячеек. */
-	private Grid grid;
+	private Grid _grid;
     
     /** Информация об уровне. */
     private Level level;
-    
+
+    /**
+     * Нахождение подсказки, поиск взрывающихся линий.
+     */
+    private MatchDetector _matchDetector;
+
+    /**
+     * Массив фишек, являющиеся подсказской.
+     */
+    private Match _helpMatch;
+
+    /**
+     * Время последнего хода.
+     */
+    private float _strokeTime;
+
+    /**
+     * Время последнего показа подсказки.  
+     */
+    private float _lastHelpTime;
+
 	/** Инициализация. */
 	void Start()
 	{
-        loadLevel(1);	}
+        loadLevel(1);
+        _matchDetector = new MatchDetector();
+        _matchDetector.setGrid(_grid);
+        _strokeTime = Time.time;
+        _lastHelpTime = 0;
+    }
     
 	void Update()
 	{
-      
-  
+        if (((Time.time - _strokeTime) > HELP_TIMEOUT) && ((Time.time - _lastHelpTime) > SHOW_HELP_INTERVAL)) {
+            if (_helpMatch != null) {
+                for (int i = 0; i < _helpMatch.Count; i++) {
+                    _helpMatch[i].chip.GetComponent<Animator>().SetTrigger("flicker");
+                }
+
+                _lastHelpTime = Time.time;
+            } else {
+                Debug.LogError ("Линий нет"); // TODO убрать 
+            }
+        }
 	}
     
 	void OnGUI()
 	{
-        if (GUI.Button(new Rect(Screen.width / 2 - 300, Screen.height / 2 + 200, 100, 40), "help")) {
+        if (GUI.Button(new Rect(Screen.width / 2 - 100, Screen.height / 2 + 200, 100, 40), "сделали ход")) {
             // Запуск поиска подсказки
-            this.help();
+            _strokeTime = Time.time;
+            _helpMatch  = _matchDetector.findHelpMatch();
+            
+            if (_helpMatch == null) {
+                Debug.LogError("Линий нет надо вызвать перетасовку"); // TODO убрать
+            } 
         }
 	}
-
-    void help () 
-    {
-        MatchDetector a = new MatchDetector();
-        a.setGrid(grid);
-        Match c = a.findHelpMatch();
-
-        Debug.Log("Нашли подсказски help  :");
-        if (c == null) {
-            Debug.Log("null ");
-        } else {
-            Debug.Log("размер массива: " + c.Count);
-            for (int i = 0; i < c.Count; i++) {
-                Debug.Log(" тип фишки =" + (int)c [i].chip.type);
-                c [i].chip.GetComponent<Animator>().SetTrigger("flicker");
-            }
-        }
-    }
-    
+  
     /**
      * Загружает уровень.
      * 
@@ -101,23 +132,23 @@ public class Game: MonoBehaviour
         string cellsString = info.asString("cells");
         
         // Загружаем ячейки
-        grid = new Grid(rowCount, colCount);
+        _grid = new Grid(rowCount, colCount);
         
         string[] cellItems = cellsString.Split(',');
         
-        if (cellItems.Length != grid.getRowCount() * grid.getColCount()) {
+        if (cellItems.Length != _grid.getRowCount() * _grid.getColCount()) {
             Debug.LogError("Ошибка! Неправильные данные загружаемого уровня!");
             return;
         }
         
         int ii = 0;
         
-        for (i = 0; i < grid.getRowCount(); i++) {
-            for (j = 0; j < grid.getColCount(); j++) {
+        for (i = 0; i < _grid.getRowCount(); i++) {
+            for (j = 0; j < _grid.getColCount(); j++) {
                 int cellInfo = int.Parse(cellItems[ii++]);
                 
                 if (cellInfo == 0) {
-                    grid.setCell(i, j, null);
+                    _grid.setCell(i, j, null);
                 } else {
                     GameObject cell = (GameObject)UnityEngine.Object.Instantiate(cellPrefab);
                     cell.transform.parent   = cellsRoot.transform;
@@ -170,13 +201,13 @@ public class Game: MonoBehaviour
                     
                     c.initialize(blocker, chip);
                     
-                    grid.setCell(i, j, c);
+                    _grid.setCell(i, j, c);
                 }
             }
         }
         
         // Отцентровываем контейнер для ячеек
-        cellsRoot.transform.position = new Vector3(Grid.CELL_WIDTH*0.5f - Grid.CELL_WIDTH * grid.getColCount()*0.5f,
-                                                   -Grid.CELL_HEIGHT*0.5f + Grid.CELL_HEIGHT * grid.getRowCount()*0.5f, 0);
+        cellsRoot.transform.position = new Vector3(Grid.CELL_WIDTH*0.5f - Grid.CELL_WIDTH * _grid.getColCount()*0.5f,
+                                                   -Grid.CELL_HEIGHT*0.5f + Grid.CELL_HEIGHT * _grid.getRowCount()*0.5f, 0);
     }
 }
