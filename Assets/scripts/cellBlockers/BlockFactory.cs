@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/** Фабрика для создания блокирующих элементов. */
 public static class BlockFactory
 {
 	/**

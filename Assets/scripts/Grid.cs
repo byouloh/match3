@@ -103,7 +103,7 @@ public class Grid
     /**
      * Заполняет пустые ячейки случайными фишками.
      * 
-     * @param chipTypes битовая маска типов фишек, которые присутствуют в уровне
+     * @param chipTypes битовая маска типов фишек, которые присутствуют в уровне. 
      * Маска имеет вид в двоичном формате 00POYBGR,
      * где позиция буквы соответсвует значению типа фишке в структуре ChipType
      */
@@ -116,6 +116,9 @@ public class Grid
         
         // Случайный тип фишки для формирования тройки(хода)
         ChipType type = getRandomChipType(chipTypes);
+        
+        MatchDetector matchDetector = new MatchDetector();
+        matchDetector.setGrid(this);
         
         while (unCheckedCells.Count > 0) {
             int itemIndex = Random.Range(0, unCheckedCells.Count);
@@ -137,7 +140,9 @@ public class Grid
                         
                         fillRandomChips(chipTypes);
                         
-                        if (canMove()) {
+                        matchDetector.findMatches();
+                        
+                        if (matchDetector.explosionLines != null && matchDetector.explosionLines.Count == 0) {
                             return;
                         } else {
                             clearTempChips(emptyCells);
@@ -226,7 +231,7 @@ public class Grid
     /**
      * Возвращает список пустых ячеек.
      */
-    private List<IntVector2> getEmptyCells()
+    public List<IntVector2> getEmptyCells()
     {
         List<IntVector2> res = new List<IntVector2>();
         
@@ -297,7 +302,7 @@ public class Grid
      * @param i номер строки ячейки, для которого нужно определить маску недопустимых фишек
      * @param i номер столбца ячейки, для которого нужно определить маску недопустимых фишек
      */
-    private uint getIgnoredTypes(int i, int j)
+    public uint getIgnoredTypes(int i, int j)
     {
         int res = 0;
         
@@ -305,58 +310,58 @@ public class Grid
             return 0;
         }
         
-        if (j > 1 && _cells[i][j-2] != null && _cells[i][j-1] != null &&
-            _cells[i][j-2].chip != null && _cells[i][j-1].chip != null &&
-            _cells[i][j-2].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i][j-1].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i][j-2].chip.type == _cells[i][j-1].chip.type
+        if (j > 1 && _cells[i][j - 2] != null && _cells[i][j - 1] != null &&
+            _cells[i][j - 2].chip != null && _cells[i][j - 1].chip != null &&
+            _cells[i][j - 2].chip.bonusType != BonusType.SAME_TYPE &&
+            _cells[i][j - 1].chip.bonusType != BonusType.SAME_TYPE &&
+            _cells[i][j - 2].chip.type == _cells[i][j - 1].chip.type
         ) {
-            res |= 1 << (int)_cells[i][j-1].chip.type;
+            res |= 1 << (int)_cells[i][j - 1].chip.type;
         }
         
-        if (j < _colCount - 2 && _cells[i][j+2] != null && _cells[i][j+1] != null &&
-            _cells[i][j+2].chip != null && _cells[i][j+1].chip != null &&
-            _cells[i][j+2].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i][j+1].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i][j+2].chip.type == _cells[i][j+1].chip.type
+        if (j < _colCount - 2 && _cells[i][j + 2] != null && _cells[i][j + 1] != null &&
+            _cells[i][j + 2].chip != null && _cells[i][j + 1].chip != null &&
+            _cells[i][j + 2].chip.bonusType != BonusType.SAME_TYPE &&
+            _cells[i][j + 1].chip.bonusType != BonusType.SAME_TYPE &&
+            _cells[i][j + 2].chip.type == _cells[i][j + 1].chip.type
         ) {
-            res |= 1 << (int)_cells[i][j+1].chip.type;
+            res |= 1 << (int)_cells[i][j + 1].chip.type;
         }
         
-        if (i > 1 && _cells[i-2][j] != null && _cells[i-1][j] != null &&
-            _cells[i-2][j].chip != null && _cells[i-1][j].chip != null &&
-            _cells[i-2][j].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i-1][j].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i-2][j].chip.type == _cells[i-1][j].chip.type
+        if (i > 1 && _cells[i - 2][j] != null && _cells[i - 1][j] != null &&
+            _cells[i - 2][j].chip != null && _cells[i - 1][j].chip != null &&
+            _cells[i - 2][j].chip.bonusType != BonusType.SAME_TYPE &&
+            _cells[i - 1][j].chip.bonusType != BonusType.SAME_TYPE &&
+            _cells[i - 2][j].chip.type == _cells[i - 1][j].chip.type
         ) {
-            res |= 1 << (int)_cells[i-1][j].chip.type;
+            res |= 1 << (int)_cells[i - 1][j].chip.type;
         }
         
-        if (i < _rowCount - 2 && _cells[i+2][j] != null && _cells[i+1][j] != null &&
-            _cells[i+2][j].chip != null && _cells[i+1][j].chip != null &&
-            _cells[i+2][j].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i+1][j].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i+2][j].chip.type == _cells[i+1][j].chip.type
+        if (i < _rowCount - 2 && _cells[i + 2][j] != null && _cells[i + 1][j] != null &&
+            _cells[i + 2][j].chip != null && _cells[i + 1][j].chip != null &&
+            _cells[i + 2][j].chip.bonusType != BonusType.SAME_TYPE &&
+            _cells[i + 1][j].chip.bonusType != BonusType.SAME_TYPE &&
+            _cells[i + 2][j].chip.type == _cells[i + 1][j].chip.type
         ) {
-            res |= 1 << (int)_cells[i+1][j].chip.type;
+            res |= 1 << (int)_cells[i + 1][j].chip.type;
         }
         
-        if (j > 0 && j < _colCount - 1 && _cells[i][j-1] != null && _cells[i][j+1] != null &&
-            _cells[i][j-1].chip != null && _cells[i][j+1].chip != null &&
-            _cells[i][j-1].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i][j+1].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i][j-1].chip.type == _cells[i][j+1].chip.type
+        if (j > 0 && j < _colCount - 1 && _cells[i][j - 1] != null && _cells[i][j + 1] != null &&
+            _cells[i][j - 1].chip != null && _cells[i][j + 1].chip != null &&
+            _cells[i][j - 1].chip.bonusType != BonusType.SAME_TYPE &&
+            _cells[i][j + 1].chip.bonusType != BonusType.SAME_TYPE &&
+            _cells[i][j - 1].chip.type == _cells[i][j + 1].chip.type
         ) {
-            res |= 1 << (int)_cells[i][j-1].chip.type;
+            res |= 1 << (int)_cells[i][j - 1].chip.type;
         }
         
-        if (i > 0 && i < _rowCount - 1 && _cells[i-1][j] != null && _cells[i+1][j] != null &&
-            _cells[i-1][j].chip != null && _cells[i+1][j].chip != null &&
-            _cells[i-1][j].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i+1][j].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i-1][j].chip.type == _cells[i+1][j].chip.type
+        if (i > 0 && i < _rowCount - 1 && _cells[i - 1][j] != null && _cells[i + 1][j] != null &&
+            _cells[i - 1][j].chip != null && _cells[i + 1][j].chip != null &&
+            _cells[i - 1][j].chip.bonusType != BonusType.SAME_TYPE &&
+            _cells[i + 1][j].chip.bonusType != BonusType.SAME_TYPE &&
+            _cells[i - 1][j].chip.type == _cells[i + 1][j].chip.type
         ) {
-            res |= 1 << (int)_cells[i-1][j].chip.type;
+            res |= 1 << (int)_cells[i - 1][j].chip.type;
         }
         
         return (uint)res;
@@ -399,7 +404,7 @@ public class Grid
      * 
      * @param chipsMask маска фишек
      */
-    private List<ChipType> getChipTypesFromMask(uint chipsMask)
+    public List<ChipType> getChipTypesFromMask(uint chipsMask)
     {
         List<ChipType> usingTypes = new List<ChipType>();
         
@@ -417,82 +422,5 @@ public class Grid
         }
         
         return usingTypes;
-    }
-}
-
-/**
- * Класс, в котором хранится информация о ряде(тройке фишек).
- */
-class ThreeLine
-{
-    /** Номер строки на котором стоит первая фишка*/
-    public int ai;
-    
-    /** Номер столбца на котором стоит первая фишка*/
-    public int aj;
-    
-    /** Номер строки на котором стоит вторая фишка*/
-    public int bi;
-    
-    /** Номер столбца на котором стоит вторая фишка*/
-    public int bj;
-    
-    /** Номер строки на котором стоит перемещаемая фишка*/
-    public int moveI;
-    
-    /** Номер столбца на котором стоит перемещаемая фишка*/
-    public int moveJ;
-    
-    /**
-     * Конструктор.
-     * 
-     * @param ai номер строки первого элемента
-     * @param aj номер столбца первого элемента
-     * @param bi номер строки второго элемента
-     * @param bj номер столбца второго элемента
-     * @param moveI номер строки перемещаемого элемента
-     * @param moveJ номер столбца перемещаемого элемента
-     */
-    public ThreeLine(int ai, int aj, int bi, int bj, int moveI, int moveJ)
-    {
-        this.ai = ai;
-        this.aj = aj;
-        this.bi = bi;
-        this.bj = bj;
-        this.moveI = moveI;
-        this.moveJ = moveJ;
-    }
-    
-    /**
-     * Возвращает список смещений координат, которые образуют ход.
-     * 
-     * @return List<ThreeLine> список смещений
-     */
-    public static List<ThreeLine> getOffsetList()
-    {
-        List<ThreeLine> offset = new List<ThreeLine>();
-        
-        offset.Add(new ThreeLine(-1, 0, -2, 0, 0, -1));
-        offset.Add(new ThreeLine(-1, 0, -2, 0, 0, 1));
-        offset.Add(new ThreeLine(-1, 0, -2, 0, -1, 0));
-        
-        offset.Add(new ThreeLine(1, 0, 2, 0, 0, -1));
-        offset.Add(new ThreeLine(1, 0, 2, 0, 0, 1));
-        offset.Add(new ThreeLine(1, 0, 2, 0, 1, 0));
-        
-        offset.Add(new ThreeLine(0, -1, 0, -2, -1, 0));
-        offset.Add(new ThreeLine(0, -1, 0, -2, 1, 0));
-        offset.Add(new ThreeLine(0, -1, 0, -2, 0, 1));
-        
-        offset.Add(new ThreeLine(0, 1, 0, 2, -1, 0));
-        offset.Add(new ThreeLine(0, 1, 0, 2, 1, 0));
-        offset.Add(new ThreeLine(0, 1, 0, 2, 0, -1));
-        
-        offset.Add(new ThreeLine(0, -1, 0, 1, -1, 0));
-        offset.Add(new ThreeLine(0, -1, 0, 1, 1, 0));
-        offset.Add(new ThreeLine(-1, 0, 1, 0, 0, -1));
-        offset.Add(new ThreeLine(-1, 0, 1, 0, 0, 1));
-        
-        return offset;
     }
 }

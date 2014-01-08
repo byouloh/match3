@@ -1,9 +1,9 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
 /**
- * Основной класс игры
+ * Основной класс игры.
  * 
  * @author Timur Bogotov timur@e-magic.org
  */
@@ -51,10 +51,14 @@ public class Game: MonoBehaviour
      */
     private float _lastHelpTime;
 
-	/** Инициализация. */
+    /** Класс, которорый перемешает фишки на уровне. */
+    private GridReshuffler _gridReshuffler;
+    
+    /** Инициализация. */
 	void Start()
 	{
-        loadLevel(3);
+        _gridReshuffler = new GridReshuffler();
+        loadLevel(1);
         _grid.generateChips(level.chipTypes);
         _matchDetector = new MatchDetector();
         _matchDetector.setGrid(_grid);
@@ -64,6 +68,16 @@ public class Game: MonoBehaviour
     
 	void Update()
 	{
+		if (Input.GetKey("p")) {
+            remixGrid();
+        }
+        
+        if (_gridReshuffler.isShuffle()) {
+            if (_gridReshuffler.step(Time.deltaTime)) {
+                //Debug.Log("Mix Complete");
+            }
+        }
+        
         if (((Time.time - _strokeTime) > HELP_TIMEOUT) && ((Time.time - _lastHelpTime) > SHOW_HELP_INTERVAL)) {
             if (_helpMatch != null) {
                 for (int i = 0; i < _helpMatch.Count; i++) {
@@ -74,10 +88,9 @@ public class Game: MonoBehaviour
             } else {
                 Debug.LogError ("Линий нет"); // TODO убрать 
             }
-        }
-	}
+        }	}
     
-	void OnGUI()
+    void OnGUI()
 	{
         if (GUI.Button(new Rect(Screen.width / 2 - 100, Screen.height / 2 + 200, 100, 40), "сделали ход")) {
             // Запуск поиска подсказки
@@ -119,7 +132,7 @@ public class Game: MonoBehaviour
         this.level                      = new Level();
         this.level.levelId              = levelId;
         this.level.maxMoves             = info.asInt("maxMoves");
-        this.level.chipTypes            = (uint)info.asInt("existChips");
+        this.level.chipTypes            = 63;// (uint)info.asInt("existChips");
         this.level.needPointsFirstStar  = info.asInt("starPoints1");
         this.level.needPointsSecondStar = info.asInt("starPoints2");
         this.level.needPointsThirdStar  = info.asInt("starPoints3");
@@ -210,5 +223,16 @@ public class Game: MonoBehaviour
         // Отцентровываем контейнер для ячеек
         cellsRoot.transform.position = new Vector3(Grid.CELL_WIDTH*0.5f - Grid.CELL_WIDTH * _grid.getColCount()*0.5f,
                                                    -Grid.CELL_HEIGHT*0.5f + Grid.CELL_HEIGHT * _grid.getRowCount()*0.5f, 0);
+    
+    }
+    
+    /**
+     * Начинает процесс перетасовки фишек.
+     */
+    public void remixGrid()
+    {
+        if (!_gridReshuffler.isShuffle()) {
+            _gridReshuffler.start(_grid, level.chipTypes, new Vector3(0, 0, 0));
+        }
     }
 }
