@@ -80,8 +80,11 @@ public class ChipSwapper
      * 
      * @return Lines массив найденных линий после перемещения фишки, либо null, если нет линий
      */
-    public Lines step(float deltaTime)
+    public SwapResult step(float deltaTime)
     {
+        SwapResult res = new SwapResult();
+        res.chipMoved = false;
+        
         if (_state == SwapState.MS_READY && Input.GetMouseButtonDown(0)) {
             // Перехват нажатия мыши
             Cell cell = getCellAtCursor((int)Input.mousePosition.x, (int)Input.mousePosition.y);
@@ -114,6 +117,7 @@ public class ChipSwapper
                     if (cell != null && cell.canEnter() && cell.chip != null) {
                         _targetCell = cell;
                         _state = SwapState.MS_SWAP;
+                        res.chipMoved = true;
                     } else {
                         // Недопустимый ход
                         _currentCell = null;
@@ -148,15 +152,14 @@ public class ChipSwapper
                 if (matchDetector.explosionLines.Count > 0) {
                     Debug.Log("Ба бах!!!");
                     
-                    for (int ii = 0; ii < matchDetector.explosionLines.Count; ii++) {
-                        for (int jj = 0; jj < matchDetector.explosionLines[ii].Count; jj++) {
-                            matchDetector.explosionLines[ii][jj].explode(null);
-                        }
-                    }
-                    
                     _state = SwapState.MS_READY;
                     
-                    return matchDetector.explosionLines;
+                    res.chipMoved   = true;
+                    res.currentCell = _currentCell;
+                    res.targetCell  = _targetCell;
+                    res.lines       = matchDetector.explosionLines;
+                    
+                    return res;
                 } else {
                     _state = SwapState.MS_REVERT;
                 }
@@ -181,6 +184,7 @@ public class ChipSwapper
                 _currentCell.chip.transform.parent = _currentCell.transform;
                 _targetCell.chip.transform.parent  = _targetCell.transform;
                 
+                res.chipMoved = true;
                 _state = SwapState.MS_READY;
             }
         }
@@ -191,7 +195,7 @@ public class ChipSwapper
             }
         }
         
-        return null;
+        return res;
     }
     
     /**

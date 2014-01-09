@@ -22,6 +22,9 @@ public class Game: MonoBehaviour
 	/** Контейнер для ячеек. */
 	public GameObject cellsRoot;
     
+    /** Контейнер для UI. */
+    public GameObject uiRoot;
+    
 	/** Шаблон ячейки. */
 	public GameObject cellPrefab;
     
@@ -57,10 +60,15 @@ public class Game: MonoBehaviour
     /** Класс, которые переставляет две фишки. */
     private ChipSwapper _chipSwapper;
     
+    /** Класс, который взрывает фишки. */
+    private LinesExploder _linesExploder;
+    
     /** Инициализация. */
 	void Start()
 	{
         _gridReshuffler = new GridReshuffler();
+        _linesExploder  = new LinesExploder(uiRoot);
+        
         loadLevel(1);
         _grid.generateChips(level.chipTypes);
         _matchDetector = new MatchDetector();
@@ -80,20 +88,32 @@ public class Game: MonoBehaviour
             remixGrid();
         }
         
-        if (_gridReshuffler.isShuffle()) {
-            if (_gridReshuffler.step(Time.deltaTime)) {
-                //Debug.Log("Mix Complete");
+        if (_linesExploder.isExploding()) {
+            _linesExploder.step(Time.deltaTime);
+        } else {
+            if (_gridReshuffler.isShuffle()) {
+                if (_gridReshuffler.step(Time.deltaTime)) {
+                    //Debug.Log("Mix Complete");
+                }
+            } else {
+                SwapResult swapResult = _chipSwapper.step(Time.deltaTime);
+                
+                if (swapResult.chipMoved) {
+                    _lastHelpTime = Time.time;
+                    
+                    if (swapResult.lines != null && swapResult.lines.Count > 0) {
+                        _linesExploder.start(swapResult);
+                    }
+                }
             }
         }
-        
-        _chipSwapper.step(Time.deltaTime);
         
         if (((Time.time - _strokeTime) > HELP_TIMEOUT) && ((Time.time - _lastHelpTime) > SHOW_HELP_INTERVAL)) {
             if (_helpMatch != null) {
                 for (int i = 0; i < _helpMatch.Count; i++) {
                     _helpMatch[i].chip.GetComponent<Animator>().SetTrigger("flicker");
                 }
-
+                
                 _lastHelpTime = Time.time;
             } else {
                 //Debug.LogError ("Линий нет"); // TODO убрать 
