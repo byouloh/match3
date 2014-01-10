@@ -9,16 +9,15 @@ using System.Collections.Generic;
  */
 public class Game: MonoBehaviour
 {
-    /** 
-     * Время ожидания подсказски .
-     */
+    /** Время ожидания подсказски. */
     const int SHOW_HELP_INTERVAL = 4;
-
-    /**
-     * Интервал между ходом и показом подсказски. 
-     */
+    
+    /** Интервал между ходом и показом подсказски. */
     const int HELP_TIMEOUT = 13;
-
+    
+    /** Экземпляр класса. */
+    private static Game _instance = null;
+    
 	/** Контейнер для ячеек. */
 	public GameObject cellsRoot;
     
@@ -27,6 +26,15 @@ public class Game: MonoBehaviour
     
 	/** Шаблон ячейки. */
 	public GameObject cellPrefab;
+    
+    /** Текстовая метка для отображения количества очков. */
+    public UILabel scoreLabel;
+    
+    /** Текстовая метка для отображения текущего уровня. */
+    public UILabel levelLabel;
+    
+    /** Текстовая метка для отображения количества ходов. */
+    public UILabel movesLabel;
     
 	/** Матрица ячеек. */
 	private Grid _grid;
@@ -63,9 +71,23 @@ public class Game: MonoBehaviour
     /** Класс, который взрывает фишки. */
     private LinesExploder _linesExploder;
     
+    /**
+     * Возвращает экземпляр класса.
+     * 
+     * Следит за тем, чтобы экземпляр класса был один во всем проекте.
+     * 
+     * @return Game экземпляр класса
+     */
+    public static Game getInstance()
+    {
+        return _instance;
+    }
+    
     /** Инициализация. */
-	void Start()
+	private void Start()
 	{
+        _instance = this;
+        
         _gridReshuffler = new GridReshuffler();
         _linesExploder  = new LinesExploder(uiRoot);
         
@@ -82,28 +104,27 @@ public class Game: MonoBehaviour
         _chipSwapper = new ChipSwapper(_grid, new IntVector2((int)offset.x, (int)offset.y), (int)Mathf.Abs(cellSize.x), (int)Mathf.Abs(cellSize.y));
     }
     
-	void Update()
+    /**
+     * Обработка текущего кадра(состояния).
+     */
+	private void Update()
 	{
 		if (Input.GetKey("p")) {
             remixGrid();
         }
         
-        if (_linesExploder.isExploding()) {
-            _linesExploder.step(Time.deltaTime);
+        if (_gridReshuffler.isShuffle()) {
+            if (_gridReshuffler.step(Time.deltaTime)) {
+                //Debug.Log("Mix Complete");
+            }
         } else {
-            if (_gridReshuffler.isShuffle()) {
-                if (_gridReshuffler.step(Time.deltaTime)) {
-                    //Debug.Log("Mix Complete");
-                }
-            } else {
-                SwapResult swapResult = _chipSwapper.step(Time.deltaTime);
+            SwapResult swapResult = _chipSwapper.step(Time.deltaTime);
+            
+            if (swapResult.chipMoved) {
+                _lastHelpTime = Time.time;
                 
-                if (swapResult.chipMoved) {
-                    _lastHelpTime = Time.time;
-                    
-                    if (swapResult.lines != null && swapResult.lines.Count > 0) {
-                        _linesExploder.start(swapResult);
-                    }
+                if (swapResult.lines != null && swapResult.lines.Count > 0) {
+                    _linesExploder.start(swapResult);
                 }
             }
         }
@@ -139,7 +160,7 @@ public class Game: MonoBehaviour
      * 
      * @param levelId номер уровня
      */
-    public void loadLevel(int levelId)
+    private void loadLevel(int levelId)
     {
         QueryResult res = DataBase.getInstance().query(
             "SELECT " +
@@ -163,10 +184,17 @@ public class Game: MonoBehaviour
         this.level                      = new Level();
         this.level.levelId              = levelId;
         this.level.maxMoves             = info.asInt("maxMoves");
-        this.level.chipTypes            = 63;// (uint)info.asInt("existChips");
+        this.level.chipTypes            = (uint)info.asInt("existChips");
         this.level.needPointsFirstStar  = info.asInt("starPoints1");
         this.level.needPointsSecondStar = info.asInt("starPoints2");
         this.level.needPointsThirdStar  = info.asInt("starPoints3");
+        
+        this.level.moves  = 0;
+        this.level.points = 0;
+        
+        scoreLabel.text = "Score: 0";
+        movesLabel.text = "Moves: 0";
+        levelLabel.text = "Level " + levelId;
         
         int i;
         int j;
@@ -260,10 +288,21 @@ public class Game: MonoBehaviour
     /**
      * Начинает процесс перетасовки фишек.
      */
-    public void remixGrid()
+    private void remixGrid()
     {
         if (!_gridReshuffler.isShuffle()) {
             _gridReshuffler.start(_grid, level.chipTypes, new Vector3(0, 0, 0));
         }
+    }
+    
+    /**
+     * Добавляет очки за взрыв фишек.
+     * 
+     * @param количество очков
+     */
+    public void addPoints(int pointsCount)
+    {
+        this.level.points += pointsCount;
+        scoreLabel.text = "Score: " + this.level.points;
     }
 }

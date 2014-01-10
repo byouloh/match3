@@ -97,7 +97,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 58262478}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.51428556, y: 3.84126973, z: 0}
+  m_LocalPosition: {x: 4.56500769, y: 3.85232735, z: 0}
   m_LocalScale: {x: .00249999994, y: .00249999994, z: .00249999994}
   m_Children:
   - {fileID: 608608569}
@@ -149,6 +149,9 @@ MonoBehaviour:
   cellsRoot: {fileID: 1049335338}
   uiRoot: {fileID: 636489371}
   cellPrefab: {fileID: 100000, guid: 5a9c21ec3be23084388e1a970e2f38db, type: 2}
+  scoreLabel: {fileID: 608608570}
+  levelLabel: {fileID: 1991829417}
+  movesLabel: {fileID: 1270985983}
 --- !u!4 &200655562
 Transform:
   m_ObjectHideFlags: 0
@@ -233,7 +236,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 538676967}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.52698421, y: 3.84126973, z: 0}
+  m_LocalPosition: {x: -4.57784891, y: 3.85232735, z: 0}
   m_LocalScale: {x: .00249999994, y: .00249999994, z: .00249999994}
   m_Children:
   - {fileID: 1991829416}
@@ -265,7 +268,7 @@ GameObject:
   - 4: {fileID: 608608569}
   - 114: {fileID: 608608570}
   m_Layer: 0
-  m_Name: Label
+  m_Name: scoreLabel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -553,7 +556,7 @@ GameObject:
   - 4: {fileID: 1270985984}
   - 114: {fileID: 1270985983}
   m_Layer: 0
-  m_Name: Label
+  m_Name: movesLabel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -607,7 +610,7 @@ GameObject:
   - 212: {fileID: 1473071989}
   - 114: {fileID: 1473071988}
   m_Layer: 0
-  m_Name: StarBar
+  m_Name: starBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -809,7 +812,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1823465699}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.2984128, y: -2.87619042, z: 0}
+  m_LocalPosition: {x: -4.34670925, y: -2.87640452, z: 0}
   m_LocalScale: {x: .00249999994, y: .00249999994, z: .00249999994}
   m_Children:
   - {fileID: 1473071987}
@@ -824,7 +827,7 @@ GameObject:
   - 4: {fileID: 1991829416}
   - 114: {fileID: 1991829417}
   m_Layer: 0
-  m_Name: Label
+  m_Name: levelLabel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -890,7 +893,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2081463711}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -.00634920597, y: 3.84126973, z: 0}
+  m_LocalPosition: {x: -.00642054528, y: 3.85232735, z: 0}
   m_LocalScale: {x: .00249999994, y: .00249999994, z: .00249999994}
   m_Children:
   - {fileID: 1270985984}
