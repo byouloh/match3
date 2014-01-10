@@ -180,8 +180,6 @@ public class GridReshuffler
         List<IntVector2> emptyCells     = _grid.getEmptyCells();
         List<IntVector2> uncheckedCells = _grid.getEmptyCells();
         
-        _bonuses.Clear();
-        
         // Раскидываем бонусные фишки в случайные ячейки
         while (uncheckedCells.Count > 0 && _bonuses.Count > 0) {
             itemIndex = Random.Range(0, uncheckedCells.Count);

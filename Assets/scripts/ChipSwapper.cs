@@ -89,14 +89,11 @@ public class ChipSwapper
             // Перехват нажатия мыши
             Cell cell = getCellAtCursor((int)Input.mousePosition.x, (int)Input.mousePosition.y);
             
-            if (cell == null || !cell.canLeave() || cell.chip == null) {
-                Debug.Log("Cell = NONE");
-            } else {
+            if (cell != null && cell.canLeave() && cell.chip != null) {
+                // попали по ячейке
                 _currentCell = cell;
                 _state = SwapState.MS_FIND_TARGET;
                 currentCellPosition = Camera.main.WorldToScreenPoint(cell.transform.position);
-                
-                Debug.Log("Cell = " + cell.position.y + ", " + cell.position.x);
             }
         } else
         if (_state == SwapState.MS_FIND_TARGET) {
@@ -105,8 +102,6 @@ public class ChipSwapper
             
             if (offset.sqrMagnitude > MOVE_MOUSE_RADIUS * MOVE_MOUSE_RADIUS) {
                 IntVector2 dir = getMoveDir(offset);
-                
-                Debug.Log("Dir = " + dir.y + ", " + dir.x);
                 
                 int i = _currentCell.position.y + dir.y;
                 int j = _currentCell.position.x + dir.x;
@@ -150,8 +145,6 @@ public class ChipSwapper
                 matchDetector.findMatches();
                 
                 if (matchDetector.explosionLines.Count > 0) {
-                    Debug.Log("Ба бах!!!");
-                    
                     _state = SwapState.MS_READY;
                     
                     res.chipMoved   = true;

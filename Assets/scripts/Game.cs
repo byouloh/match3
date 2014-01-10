@@ -123,7 +123,8 @@ public class Game: MonoBehaviour
             if (swapResult.chipMoved) {
                 _lastHelpTime = Time.time;
                 
-                if (swapResult.lines != null && swapResult.lines.Count > 0) {
+                if (swapResult.lines != null) {
+                    onMoved();
                     _linesExploder.start(swapResult);
                 }
             }
@@ -142,6 +143,9 @@ public class Game: MonoBehaviour
         }
     }
     
+    /**
+     * Прорисовка элементов GUI.
+     */
     void OnGUI()
 	{
         if (GUI.Button(new Rect(Screen.width / 2 - 100, Screen.height / 2 + 200, 100, 40), "сделали ход")) {
@@ -189,12 +193,12 @@ public class Game: MonoBehaviour
         this.level.needPointsSecondStar = info.asInt("starPoints2");
         this.level.needPointsThirdStar  = info.asInt("starPoints3");
         
-        this.level.moves  = 0;
+        this.level.remainingMoves = this.level.maxMoves;
         this.level.points = 0;
         
         scoreLabel.text = "Score: 0";
-        movesLabel.text = "Moves: 0";
-        levelLabel.text = "Level " + levelId;
+        movesLabel.text = "Moves: " + this.level.remainingMoves;
+        levelLabel.text = "Level "  + levelId;
         
         int i;
         int j;
@@ -267,7 +271,7 @@ public class Game: MonoBehaviour
                     if (chipType > 0) {
                         try {
                             chip = ChipFactory.createNew((ChipType)(chipType - 1), (BonusType)bonusType, c.gameObject);
-                        } catch(System.Exception) {
+                        } catch (System.Exception e) {
                             Debug.LogError("Ошибка! Неверный тип фишки");
                         }
                     }
@@ -282,7 +286,6 @@ public class Game: MonoBehaviour
         // Отцентровываем контейнер для ячеек
         cellsRoot.transform.position = new Vector3(Grid.CELL_WIDTH*0.5f - Grid.CELL_WIDTH * _grid.getColCount()*0.5f,
                                                    -Grid.CELL_HEIGHT*0.5f + Grid.CELL_HEIGHT * _grid.getRowCount()*0.5f, 0);
-    
     }
     
     /**
@@ -304,5 +307,12 @@ public class Game: MonoBehaviour
     {
         this.level.points += pointsCount;
         scoreLabel.text = "Score: " + this.level.points;
+    }
+    
+    /** Вызывается когда пользователь сделал ход. */
+    private void onMoved()
+    {
+        this.level.remainingMoves--;
+        movesLabel.text = "Moves: " + this.level.remainingMoves;
     }
 }

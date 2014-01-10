@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 
-/** Информация для создания бонусной фишки. */
+/** 
+ * Информация для создания бонусной фишки.
+ */
 struct BonusInfo
 {
     /** Ячейка в которую нужно создать бонусную фишку. */
@@ -77,9 +79,15 @@ public class LinesExploder
                     Cell bonusCell = null;
                     
                     for (j = 0; j < line.Count; j++) {
+                        if (line[j].chip != null) {
+                            cType = line[j].chip.type;
+                            break;
+                        }
+                    }
+                    
+                    for (j = 0; j < line.Count; j++) {
                         if (line[j] == swapResult.currentCell || line[j] == swapResult.targetCell) {
                             bonusCell = line[j];
-                            cType     = line[j].chip.type;
                         }
                         
                         line[j].explode(null);
@@ -88,6 +96,19 @@ public class LinesExploder
                     if (bType != BonusType.NONE) {
                         if (bonusCell == null) {
                             bonusCell = line[line.Count - 1];
+                        }
+                        
+                        j = 0;
+                        while (j < bonusChips.Count) {
+                            if (bonusChips[j].cell == bonusCell) {
+                                if (bonusChips[j].bType == BonusType.SAME_TYPE) {
+                                    bType = BonusType.SAME_TYPE;
+                                }
+                                
+                                break;
+                            } else {
+                                j++;
+                            }
                         }
                         
                         bonusChips.Add(new BonusInfo(bonusCell, cType, bType));
@@ -159,15 +180,15 @@ public class LinesExploder
     {
         if (line.Count < 4) {
             return BonusType.NONE;
+        } else
+        if (line.Count > 4) {
+            return BonusType.SAME_TYPE;
+        } else
+        if (line[0].position.x == line[1].position.x) {
+            return BonusType.VERTICAL_STRIP;
         } else {
-            if (line.Count > 4) {
-                return BonusType.SAME_TYPE;
-            } else
-            if (line[0].position.x == line[1].position.x) {
-                return BonusType.VERTICAL_STRIP;
-            } else {
-                return BonusType.HORIZONTAL_STRIP;
-            }
+            return BonusType.HORIZONTAL_STRIP;
         }
+        
     }
 }
