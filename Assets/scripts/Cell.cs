@@ -1,54 +1,88 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 /** Класс ячейки. */
-public class Cell : MonoBehaviour, IExplodable
+public class Cell: MonoBehaviour, IExplodable, ICellInfluence
 {
     /** Фишка. */
 	public Chip chip = null;
     
-    /** Блокирующий элемент. */
-	public CellBlocker blocker = null;
-    
-    /** Обработчик события по окончании взрыва. */
-    
-	private Callback _explodeCallback = null;
-    
+    /** Действующий блокирующий элемент . */
+    public CellBlocker activeBlocker
+    {
+        get
+        {
+            return _blockers.getCurrent();
+        }
+    }
+
     /** Матричные координаты(номер строки и столбца) */
     public IntVector2 position;
 
-	/**
+    private CellBehaviour _cellBehaviour;
+
+    /** Список блокирующих элементов. */
+    private BlockersList _blockers;
+
+    /** Обработчик события по окончании взрыва. */
+    private Callback _explodeCallback = null;
+
+    /**
      * Инициализирует ячейку.
      * 
-     * @param blocker блокирующий элемент
-     * @param chip фишка ячейки(может быть null)
-     * @param position матричные координаты(номер строки и столбца)
+     * @param cellBehaviour Поведение ячейки при обработке и перемещении фишки
+     * @param position      Матричные координаты(номер строки и столбца)
      */
-	public void initialize(CellBlocker blocker, Chip chip, IntVector2 position)
-	{
-		this.blocker  = blocker;
-		this.chip     = chip;
-        this.position = position;
-	}
-    
+    public void initialize(CellBehaviour cellBehaviour, IntVector2 position)
+    {
+        _cellBehaviour = cellBehaviour;
+        this.position  = position;
+        _blockers      = new BlockersList(gameObject);
+    }
+
     /** Может ли фишка покинуть ячейку. */
 	public bool canLeave()
 	{
-		return blocker.canLeave();
+		return _blockers.canLeave() && _cellBehaviour.canLeave();
 	}
 	
     /** Может ли фишка войти в ячейку. */
 	public bool canEnter()
 	{
-        return blocker.canEnter();
+        return _blockers.canEnter() && _cellBehaviour.canEnter();
     }
 	
-    /** Может ли фишка пройти сквозь ячейку. */
-	public bool canPass()
+    /** Определяет возможность создать фишку внутри ячейки. */
+    public bool canContainChip()
     {
-		return blocker.canPass();
+        return _blockers.canContainChip() && _cellBehaviour.canContainChip();
+    }
+
+    public void addBlocker(CellBlocker blocker)
+    {
+        if (blocker == null) {
+            throw new System.NullReferenceException("Blocker can not be null");
+        }
+
+        _blockers.push(blocker);
+    }
+
+    public Chip takeChip()
+    {
+        return _cellBehaviour.takeChip();
     }
     
+    public void setChip(Chip chip)
+    {
+        if (chip == null) {
+            throw new System.NullReferenceException("Cell::setChip: chip is null");
+        }
+        
+        this.chip = chip;
+        chip.transform.parent = gameObject.transform;
+    }
+
     /**
      * Взрывает блокирующий элемент, если есть, при повторном вызове взрывает фишку, если есть.
      * 
@@ -58,37 +92,44 @@ public class Cell : MonoBehaviour, IExplodable
      */
 	public bool explode(Callback callback)
 	{
-		_explodeCallback = callback;
-
-		Callback tmpCallback = _onExplodeComplete;
+		_explodeCallback     = callback;
+        Callback tmpCallback = _onExplodeComplete;
 
 		// Защищена ли фишка
 		bool chipProtected   = false;
-
-		// 
-		bool blockerExploded = false;
-
-        if (blocker.explode(tmpCallback)) {
-			blockerExploded = true;
-
-			if (blocker.isProtecting()) {
+        bool blockerExploded = false;
+        
+        if (_blockers.getCurrent().explode(tmpCallback)) {
+            blockerExploded = true;
+            
+			if (_blockers.isProtecting()) {
 				chipProtected = true;
 			}
 
-			if (blocker.hasNext()) {
-				BlockerType nextBlockerType = blocker.getNext();
-				
-				Destroy(blocker.gameObject);
-				
-				try {
-					blocker = BlockFactory.createNew(nextBlockerType, gameObject);
-                } catch (System.Exception e) {
-                    Debug.LogError(e.Message);
-				}
-			}
-		}
+            CellBlocker blocker = null;
 
-		if (!chipProtected) {
+            // Если за взорвавшимся нужно создать другой элемент, то создаем.
+            if (_blockers.getCurrent().hasNext()) {
+                try {
+                    blocker = BlockerFactory.createNew(_blockers.getCurrent().getNext(), gameObject);
+                } catch (System.Exception e) {
+                    Debug.LogError("Cell::explode: " + e.Message);
+                }
+			}
+
+            // Удаляем взорвавшийся блокирующий элемент и добавляем новый, если есть.
+            try {
+                _blockers.removeCurrent();
+
+                if (blocker != null) {
+                    _blockers.push(blocker);
+                }
+            } catch (System.Exception e) {
+                Debug.LogError("Cell::explode: " + e.Message);
+            }
+        }
+        
+        if (!chipProtected) {
 			if (chip == null || !chip.explode(tmpCallback)) {
 				return blockerExploded;
 			}

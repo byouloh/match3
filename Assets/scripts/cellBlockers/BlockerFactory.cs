@@ -2,7 +2,7 @@
 using System.Collections;
 
 /** Фабрика для создания блокирующих элементов. */
-public static class BlockFactory
+public static class BlockerFactory
 {
 	/**
 	 * Создает блокирующий элемент по типу.
@@ -54,7 +54,7 @@ public static class BlockFactory
 	 * @return CellBlocker класс блокирующего элемента
 	 * @throw System.ArgumentException, System.NullReferenceException
 	 */
-	public static CellBlocker createNew(string blockerName, GameObject root)
+    public static CellBlocker createNew(string blockerName, GameObject parent)
 	{
 		GameObject prefab = Resources.Load<GameObject>("prefabs/blockers/" + blockerName);
 
@@ -64,8 +64,8 @@ public static class BlockFactory
 		
 		GameObject obj = (GameObject) UnityEngine.Object.Instantiate(prefab);
 
-		if (root != null) {
-			obj.transform.parent = root.transform;
+        if (parent != null) {
+            obj.transform.parent        = parent.transform;
 			obj.transform.localPosition = Vector3.zero;
 		}
 

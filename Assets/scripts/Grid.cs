@@ -373,16 +373,16 @@ public class Grid
      * @param chipTypes маска используемых фишек
      * @parent контейнер для фишки
      */
-    private Chip createChipRandom(uint chipTypes, GameObject parent)
+    public Chip createChipRandom(uint chipTypes, GameObject parent)
     {
         List<ChipType> usingTypes = getChipTypesFromMask(chipTypes);
         
-        if (usingTypes.Count == 0) {
-            return null;
-        } else {
+        if (usingTypes.Count > 0) {
             return ChipFactory.createNew(usingTypes[Random.Range(0, usingTypes.Count)],
                                          BonusType.NONE, parent);
         }
+        
+        return null;
     }
     
     /**

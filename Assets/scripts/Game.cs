@@ -121,7 +121,7 @@ public class Game: MonoBehaviour
             SwapResult swapResult = _chipSwapper.step(Time.deltaTime);
             
             if (swapResult.chipMoved) {
-                _lastHelpTime = Time.time;
+                _strokeTime = Time.time;
                 
                 if (swapResult.lines != null) {
                     onMoved();
@@ -129,7 +129,7 @@ public class Game: MonoBehaviour
                 }
             }
         }
-        
+
         if (((Time.time - _strokeTime) > HELP_TIMEOUT) && ((Time.time - _lastHelpTime) > SHOW_HELP_INTERVAL)) {
             if (_helpMatch != null) {
                 for (int i = 0; i < _helpMatch.Count; i++) {
@@ -233,7 +233,7 @@ public class Game: MonoBehaviour
                     
                     Cell c = cell.GetComponent<Cell>();
                     
-                    CellBlocker blocker;
+                    CellBlocker blocker = null;
                     
                     int blockerType = cellInfo & 0xFF;
                     int chipType    = (cellInfo >> 8) & 0xF;
@@ -241,28 +241,26 @@ public class Game: MonoBehaviour
                     
                     switch (blockerType) {
                         case 1:
-                            blocker = BlockFactory.createNew(BlockerType.NONE, c.gameObject);
                             break;
-                            
+
                         case 2:
-                            blocker = BlockFactory.createNew(BlockerType.CHAIN, c.gameObject);
+                            blocker = BlockerFactory.createNew(BlockerType.CHAIN, c.gameObject);
                             break;
                             
                         case 3:
-                            blocker = BlockFactory.createNew(BlockerType.CHAIN2, c.gameObject);
+                            blocker = BlockerFactory.createNew(BlockerType.CHAIN2, c.gameObject);
                             break;
                             
                         case 4:
-                            blocker = BlockFactory.createNew(BlockerType.WRAP, c.gameObject);
+                            blocker = BlockerFactory.createNew(BlockerType.WRAP, c.gameObject);
                             break;
                             
                         case 5:
-                            blocker = BlockFactory.createNew(BlockerType.WRAP2, c.gameObject);
+                            blocker = BlockerFactory.createNew(BlockerType.WRAP2, c.gameObject);
                             break;
                             
                         default:
-                            Debug.LogError("Ошибка! Неверный тип ячейки. Номер ячейки : i = " + i + ", j = " + j );
-                            blocker = BlockFactory.createNew(BlockerType.NONE, c.gameObject);
+                            Debug.LogError("Ошибка! Неверный тип ячейки. Номер ячейки : i = " + i + ", j = " + j);
                             break;
                     }
                     
@@ -272,11 +270,19 @@ public class Game: MonoBehaviour
                         try {
                             chip = ChipFactory.createNew((ChipType)(chipType - 1), (BonusType)bonusType, c.gameObject);
                         } catch (System.Exception e) {
-                            Debug.LogError("Ошибка! Неверный тип фишки");
+                            Debug.LogError("Ошибка! Неверный тип фишки: " + e.Message);
                         }
                     }
                     
-                    c.initialize(blocker, chip, new IntVector2(j, i));
+                    c.initialize(new NormalCell(), new IntVector2(j, i));
+
+                    if (blocker != null) {
+                        c.addBlocker(blocker);
+                    }
+
+                    if (chip != null) {
+                        c.setChip(chip);
+                    }
                     
                     _grid.setCell(i, j, c);
                 }
