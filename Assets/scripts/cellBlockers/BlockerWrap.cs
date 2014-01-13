@@ -1,6 +1,9 @@
 ﻿
 /**
  * Блокирующий элемент(одинарная обводка).
+ * 
+ * @author Timur Bogotov timur@e-magic.org
+ * @author Azamat Bogotov azamat@e-magic.org
  */
 public class BlockerWrap: CellBlocker
 {

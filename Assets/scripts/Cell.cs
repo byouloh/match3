@@ -2,7 +2,19 @@
 using System.Collections;
 using System.Collections.Generic;
 
-/** Класс ячейки. */
+/**
+ * Класс ячейки.
+ * 
+ * Ячейка - элемент игрового поля. Она может содержать в себе группу блокирующих элементов и фишку.
+ * 
+ * Поведение ячейки применительно к фишке может быть разным:
+ * - Пустая ячейка(не может содержать фишку);
+ * - Обычная(может содержать фишку, которая может входить и покаидать ячейку);
+ * - Телепорт(не может содержать фишку, но может пропускать вниз через себя);
+ * - Создатель(не может содержать фишку, но может ее создавать);
+ * 
+ * Поведение определяется свойствами самой ячейки и группой блокирующих элементов.
+ */
 public class Cell: MonoBehaviour, IExplodable, ICellInfluence
 {
     /** Фишка. */
@@ -20,6 +32,7 @@ public class Cell: MonoBehaviour, IExplodable, ICellInfluence
     /** Матричные координаты(номер строки и столбца) */
     public IntVector2 position;
 
+    /** Определяет поведение ячейки применительно к фишке. */
     private CellBehaviour _cellBehaviour;
 
     /** Список блокирующих элементов. */
@@ -36,9 +49,14 @@ public class Cell: MonoBehaviour, IExplodable, ICellInfluence
      */
     public void initialize(CellBehaviour cellBehaviour, IntVector2 position)
     {
+        // создаем контейнер для блокирующих элементов.
+        GameObject blockersRoot = new GameObject("blockersRoot");
+        blockersRoot.transform.parent        = gameObject.transform;
+        blockersRoot.transform.localPosition = Vector3.zero;
+
         _cellBehaviour = cellBehaviour;
         this.position  = position;
-        _blockers      = new BlockersList(gameObject);
+        _blockers      = new BlockersList(blockersRoot);
     }
 
     /** Может ли фишка покинуть ячейку. */

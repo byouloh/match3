@@ -3,14 +3,32 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+/**
+ * Группа блокирующих элементов.
+ * 
+ * Используется для хранения и обработки группы блокирующих элементов применительно к одной ячейке.
+ * Можно работать с группой как с одним блокирующим элементом.
+ * 
+ * @author Azamat Bogotov azamat@e-magic.org
+ */
 class BlockersList: ICellInfluence
 {
+    /** Список блокирующих элементов. */
     protected List<CellBlocker> _blockers;
+
+    /** Контейнер для хранения создаваемых блокирующих элементов. */
     private GameObject _rootContainer;
 
+    /** Счетчик, подсчитывающий количество блокирующих элементов, повлиявших на свойство canLeave. */
     private int _canLeave;
+
+    /** Счетчик, подсчитывающий количество блокирующих элементов, повлиявших на свойство canEnter. */
     private int _canEnter;
+
+    /** Счетчик, подсчитывающий количество блокирующих элементов, повлиявших на свойство canContainChip. */
     private int _canContainChip;
+
+    /** Счетчик, подсчитывающий количество блокирующих элементов, повлиявших на свойство isProtecting. */
     private int _isProtecting;
 
     /**
@@ -29,9 +47,16 @@ class BlockersList: ICellInfluence
         _rootContainer = root;
         _blockers      = new List<CellBlocker>();
 
+        // Добавляем первый блокирующий элемент по умолчанию.
         _addInitialBlocker();
     }
 
+    /**
+     * Добавляет блокирующий элемент по умолчанию и задает начальные значения для счетчиков.
+     * 
+     * Добавляет первый и не удаляемый блокирующий элемент по умолчанию, 
+     * т.к. в списке должен оставаться хотя бы один элемент для обработки.
+     */
     private void _addInitialBlocker()
     {
         if (_blockers.Count <= 0) {
@@ -42,13 +67,16 @@ class BlockersList: ICellInfluence
             _canEnter       = (blocker.canEnter()       ? 1 : 0);
             _canContainChip = (blocker.canContainChip() ? 1 : 0);
             _isProtecting   = (blocker.isProtecting()   ? 1 : 0);
+
+            _blockers.Add(blocker);
             
-            push(blocker);
+            blocker.transform.parent        = _rootContainer.transform;
+            blocker.transform.localPosition = Vector3.zero;
         }
     }
 
     /**
-     * Определяет возможность фишке покинуть ячейку.
+     * Определяет возможность фишке покинуть ячейку, исходя из общего влияния группы блокирующих элементов.
      */
     public bool canLeave()
     {
@@ -56,7 +84,7 @@ class BlockersList: ICellInfluence
     }
     
     /**
-     * Определяет возможность фишке войти ячейку.
+     * Определяет возможность фишке войти ячейку, исходя из общего влияния группы блокирующих элементов.
      */
     public bool canEnter()
     {
@@ -64,7 +92,7 @@ class BlockersList: ICellInfluence
     }
     
     /**
-     * Определяет возможность создать фишку внутри ячейки.
+     * Определяет возможность создать фишку внутри ячейки, исходя из общего влияния группы блокирующих элементов.
      */
     public bool canContainChip()
     {
@@ -72,17 +100,29 @@ class BlockersList: ICellInfluence
     }
     
     /**
-     * Защищает ли блокирующий элемент содержимое от взрыва.
+     * Определяет защищает ли группа блокирующих элементов содержимое ячейки от взрыва.
      */
     public bool isProtecting()
     {
         return (_isProtecting > 0);
     }
 
+    /**
+     * Добавляет новый блокирующий элемент в список(стек).
+     * 
+     * @param blocker Блокирующий элемент отличный от BlockerType.NONE.
+     */
     public void push(CellBlocker blocker)
     {
         if (blocker == null) {
             throw new System.NullReferenceException("CellBlockers::push: blocker is null");
+        }
+
+        // Запрещаем добавление блокирующего элемента BlockerNone, т.к. он уже содержится в списке.
+        // Если его добавить, то, т.к. у него нет взрыва, все элементы, добавленные до него остануться навсегда.
+        // см. Cell.explode()
+        if (blocker is BlockerNone) {
+            return;
         }
 
         _blockers.Insert(0, blocker);
@@ -98,6 +138,13 @@ class BlockersList: ICellInfluence
         _isProtecting   += (blocker.isProtecting()   ? 1 : 0);
     }
 
+    /**
+     * Возвращает текущий(активный) блокирующий элемент.
+     * 
+     * Если список пуст, то создается блокирующий элемент по умолчанию и возвращается он.
+     * 
+     * @return Возвращает текущий(активный) блокирующий элемент.
+     */
     public CellBlocker getCurrent()
     {
         if (_blockers.Count <= 0) {
@@ -107,6 +154,12 @@ class BlockersList: ICellInfluence
         return _blockers[0];
     }
 
+    /**
+     * Удаляет текущий(активный) блокирующий элемент из списка.
+     * 
+     * Элемент удаляется как списка и затем сам уничтожается.
+     * При удалении объекта, изменяются счетчики свойств, на которые он влиял.
+     */
     public void removeCurrent()
     {
         if (_blockers.Count <= 1) {

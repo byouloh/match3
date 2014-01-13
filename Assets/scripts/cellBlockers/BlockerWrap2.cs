@@ -1,8 +1,9 @@
-﻿using UnityEngine;
-using System.Collections;
-
+﻿
 /**
  * Блокирующий элемент(двойная обводка).
+ * 
+ * @author Timur Bogotov timur@e-magic.org
+ * @author Azamat Bogotov azamat@e-magic.org
  */
 public class BlockerWrap2: CellBlocker
 {

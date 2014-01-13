@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-/** Тип блокирующего элемента ячейки. */
+/**
+ * Тип блокирующего элемента ячейки.
+ */
 public enum BlockerType
 {
     /** Обычная ячейка. */
@@ -20,7 +22,12 @@ public enum BlockerType
     WRAP2
 };
 
-/** Абстрактный(базовый) класс ячейки. */
+/**
+ * Абстрактный(базовый) класс для блокирующих элементов.
+ * 
+ * @author Timur Bogotov timur@e-magic.org
+ * @author Azamat Bogotov azamat@e-magic.org
+ */
 public abstract class CellBlocker: MonoBehaviour, IExplodable, ICellInfluence
 {
     /** Обработчик события по окончании взрыва. */
@@ -62,11 +69,11 @@ public abstract class CellBlocker: MonoBehaviour, IExplodable, ICellInfluence
         if (cb != null) {
             cb.initialize(_onExplodeAnimationComplete);
         } else {
-            Debug.LogError("Не найдент компонент: AnimationEventCallback");
+            Debug.LogError("CellBlocker::explode: Не найдент компонент: AnimationEventCallback");
         }
 
         if (gameObject.transform.parent != null) {
-            gm.transform.parent = gameObject.transform.parent;
+            gm.transform.parent        = gameObject.transform.parent;
             gm.transform.localPosition = Vector3.zero;
         }
 

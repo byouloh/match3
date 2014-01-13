@@ -1,6 +1,9 @@
 ﻿
 /**
  * Блокирующий элемент(двойная цепь).
+ * 
+ * @author Timur Bogotov timur@e-magic.org
+ * @author Azamat Bogotov azamat@e-magic.org
  */
 public class BlockerChain2: CellBlocker
 {
