@@ -59,35 +59,43 @@ public class Cell: MonoBehaviour, IExplodable, ICellInfluence
         _blockers      = new BlockersList(blockersRoot);
     }
 
-    /** Может ли фишка покинуть ячейку. */
+    /**
+     * Может ли фишка покинуть ячейку.
+     */
 	public bool canLeave()
 	{
 		return _blockers.canLeave() && _cellBehaviour.canLeave();
 	}
 	
-    /** Может ли фишка войти в ячейку. */
+    /**
+     * Может ли фишка войти в ячейку.
+     */
 	public bool canEnter()
 	{
         return _blockers.canEnter() && _cellBehaviour.canEnter();
     }
 	
-    /** Является ли ячейка пустой. */
+    /**
+     * Является ли ячейка пустой.
+     */
     public bool isEmpty()
     {
-        if (chip == null) {
-            return true;
-        } else {
-            return false;
-        }
+        return (chip == null);
     }
 
-
-    /** Определяет возможность создать фишку внутри ячейки. */
+    /**
+     * Определяет возможность создать фишку внутри ячейки.
+     */
     public bool canContainChip()
     {
         return _blockers.canContainChip() && _cellBehaviour.canContainChip();
     }
 
+    /**
+     * Добавляет новый блокирующий элемент в ячейку.
+     * 
+     * @param blocker Блокирующий элемент отличный от BlockerType.NONE
+     */
     public void addBlocker(CellBlocker blocker)
     {
         if (blocker == null) {
@@ -97,11 +105,21 @@ public class Cell: MonoBehaviour, IExplodable, ICellInfluence
         _blockers.push(blocker);
     }
 
+    /**
+     * Получает и возвращает фишку из соседней ячейки сверху.
+     * 
+     * @return Возвращает фишку, если она создана или найдена, иначе null
+     */
     public Chip takeChip()
     {
         return _cellBehaviour.takeChip();
     }
-    
+
+    /**
+     * Задает ячейке фишку и помещяет внутрь себя.
+     * 
+     * @param chip Экземпляр фишки.
+     */
     public void setChip(Chip chip)
     {
         if (chip == null) {

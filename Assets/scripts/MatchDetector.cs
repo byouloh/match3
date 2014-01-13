@@ -319,6 +319,12 @@ public class MatchDetector
             return foundMatch;
         }
 
+        if (!_grid.getCell(cell.x, cell.y).canLeave() || 
+            !_grid.getCell(cellCoordinates.x, cellCoordinates.y).canEnter()
+        ) {
+            return foundMatch;
+        }
+
         useCell = _grid.getCell(cell.x, cell.y).chip.type;
 
         int topX    = cellCoordinates.x;

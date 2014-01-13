@@ -95,15 +95,17 @@ public class Game: MonoBehaviour
         _linesExploder  = new LinesExploder(uiRoot);
         
         loadLevel(1);
+
         _grid.generateChips(level.chipTypes);
         _matchDetector = new MatchDetector();
         _matchDetector.setGrid(_grid);
-        _strokeTime = Time.time;
+
+        _strokeTime   = Time.time;
         _lastHelpTime = 0;
 
         _fallingManager = new FallingManager();
         
-        Vector3 offset = Camera.main.WorldToScreenPoint(cellsRoot.transform.position + new Vector3(-Grid.CELL_WIDTH * 0.5f, Grid.CELL_HEIGHT * 0.5f, 0));
+        Vector3 offset   = Camera.main.WorldToScreenPoint(cellsRoot.transform.position + new Vector3(-Grid.CELL_WIDTH * 0.5f, Grid.CELL_HEIGHT * 0.5f, 0));
         Vector3 cellSize = offset - Camera.main.WorldToScreenPoint(cellsRoot.transform.position + new Vector3(Grid.CELL_WIDTH * 0.5f, -Grid.CELL_HEIGHT * 0.5f, 0));
         
         _chipSwapper = new ChipSwapper(_grid, new IntVector2((int)offset.x, (int)offset.y), (int)Mathf.Abs(cellSize.x), (int)Mathf.Abs(cellSize.y));
@@ -120,8 +122,10 @@ public class Game: MonoBehaviour
         
         if (_gridReshuffler.isShuffle()) {
             if (_gridReshuffler.step(Time.deltaTime)) {
-                //Debug.Log("Mix Complete");
+                _findHelpMatch();
             }
+        } else if (_fallingManager.isStarting()) {
+            _fallingManager.step(Time.deltaTime);
         } else {
             SwapResult swapResult = _chipSwapper.step(Time.deltaTime);
             
@@ -133,24 +137,47 @@ public class Game: MonoBehaviour
                     _linesExploder.start(swapResult);
 
                     // Вызываем падение фишек
-                    _fallingManager.start(_grid, null);
+                    _helpMatch = null;
+                    _fallingManager.start(_grid, _onFallingComplete);
                 }
             }
         }
 
-        if (((Time.time - _strokeTime) > HELP_TIMEOUT) && ((Time.time - _lastHelpTime) > SHOW_HELP_INTERVAL)) {
-            if (_helpMatch != null) {
-                for (int i = 0; i < _helpMatch.Count; i++) {
-                    _helpMatch[i].chip.GetComponent<Animator>().SetTrigger("flicker");
-                }
-                
-                _lastHelpTime = Time.time;
-            } else {
-                //Debug.LogError ("Линий нет"); // TODO убрать 
+        if (_helpMatch != null && 
+            ((Time.time - _strokeTime) > HELP_TIMEOUT) && 
+            ((Time.time - _lastHelpTime) > SHOW_HELP_INTERVAL)
+        ) {
+            for (int i = 0; i < _helpMatch.Count; i++) {
+                _helpMatch[i].chip.GetComponent<Animator>().SetTrigger("flicker");
             }
+            
+            _lastHelpTime = Time.time;
         }
     }
-    
+
+    /**
+     * Событие по завершению заполнения пустых клеток после взрыва.
+     */
+    private void _onFallingComplete()
+    {
+        _matchDetector.findMatches();
+        
+        if (_matchDetector.explosionLines.Count > 0) {
+            SwapResult swapResult = new SwapResult();
+
+            swapResult.chipMoved = false;
+            swapResult.lines     = _matchDetector.explosionLines;
+
+            _linesExploder.start(swapResult);
+
+            // Вызываем падение фишек
+            _helpMatch = null;
+            _fallingManager.start(_grid, _onFallingComplete);
+        } else {
+            _findHelpMatch();
+        }
+    }
+
     /**
      * Прорисовка элементов GUI.
      */
@@ -158,14 +185,23 @@ public class Game: MonoBehaviour
 	{
         if (GUI.Button(new Rect(Screen.width  + 100, Screen.height  + 200, 100, 40), "сделали ход")) {
             // Запуск поиска подсказки
-            _strokeTime = Time.time;
-            _helpMatch  = _matchDetector.findHelpMatch();
-            
-            if (_helpMatch == null) {
-                Debug.LogError("Линий нет надо вызвать перетасовку"); // TODO убрать
-            } 
+            _findHelpMatch();
         }
 	}
+
+    /**
+     * Запускает поиск подсказки(поиск возможного хода).
+     */
+    private void _findHelpMatch()
+    {
+        _strokeTime   = Time.time;
+        _lastHelpTime = 0;
+        _helpMatch    = _matchDetector.findHelpMatch();
+
+        if (_helpMatch == null) {
+            remixGrid();
+        }
+    }
   
     /**
      * Загружает уровень.
@@ -308,6 +344,7 @@ public class Game: MonoBehaviour
     private void remixGrid()
     {
         if (!_gridReshuffler.isShuffle()) {
+            _helpMatch = null;
             _gridReshuffler.start(_grid, level.chipTypes, new Vector3(0, 0, 0));
         }
     }
@@ -329,7 +366,5 @@ public class Game: MonoBehaviour
         // Перерасчет очков.
         this.level.remainingMoves--;
         movesLabel.text = "Moves: " + this.level.remainingMoves;
-
-
     }
 }

@@ -83,7 +83,7 @@ public class GridReshuffler
      * @param deltaTime см. Time.deltaTime
      * 
      * @return возвращает состояние выполнения перемешивания:
-     * true - перемешивание заверщено, false - в процессе перемешивания
+     * true - перемешивание завершено, false - в процессе перемешивания
      */
     public bool step(float deltaTime)
     {
