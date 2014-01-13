@@ -2,8 +2,21 @@ using UnityEngine;
 
 public class BuilderCell: CellBehaviour
 {
-    public override Chip takeChip()
+    private uint _chipTypes;
+
+    public BuilderCell(IntVector2 cellPosition, Grid grid, uint chipTypes)
     {
+        _cellPosition = cellPosition;
+        _grid         = grid;
+        _chipTypes    = chipTypes;
+    }
+
+    public override Chip takeChip(int depth)
+    {
+        if (_grid == null) {
+            return null;
+        }
+
         Chip chip = null;
 
         try {
@@ -11,11 +24,7 @@ public class BuilderCell: CellBehaviour
         } catch (System.Exception e) {
             Debug.LogError("Chip create error in BuilderCell::takeChip(), eror message: " + e.Message);
         }
-        
-        if (chip != null) {
-            chip.transform.parent = _grid.getCell(_cellPosition.x, _cellPosition.y).transform;
-        }
-        
+
         return chip;
     }
     

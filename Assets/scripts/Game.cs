@@ -134,10 +134,12 @@ public class Game: MonoBehaviour
                 
                 if (swapResult.lines != null) {
                     onMoved();
+
+                    _helpMatch = null;
+
                     _linesExploder.start(swapResult);
 
                     // Вызываем падение фишек
-                    _helpMatch = null;
                     _fallingManager.start(_grid, _onFallingComplete);
                 }
             }
@@ -194,13 +196,16 @@ public class Game: MonoBehaviour
      */
     private void _findHelpMatch()
     {
+        _helpMatch = null;
+
+        /*
         _strokeTime   = Time.time;
         _lastHelpTime = 0;
         _helpMatch    = _matchDetector.findHelpMatch();
 
         if (_helpMatch == null) {
             remixGrid();
-        }
+        }*/
     }
   
     /**
@@ -318,8 +323,8 @@ public class Game: MonoBehaviour
                         }
                     }
                     
-                    c.initialize(new NormalCell(), new IntVector2(j, i));
-
+                    c.initialize(new NormalCell(new IntVector2(i, j), _grid), new IntVector2(j, i));
+                    
                     if (blocker != null) {
                         c.addBlocker(blocker);
                     }

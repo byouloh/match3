@@ -10,7 +10,6 @@ public class FallingManager
         {
             return _fallingSpeed;
         }
-        
         set
         {
             if (value > 0) {
@@ -19,8 +18,6 @@ public class FallingManager
         }
     }
 
-    private const float GRAVITY_Y = 9.8f;
-    
 	private List<GameObject> _items;
     private List<GameObject> _removeItems;
     private Grid _grid;
@@ -35,17 +32,18 @@ public class FallingManager
      */
     private bool _isFalling;
     
-    private float _fallingSpeed    = 1f;
+    private float _fallingSpeed    = 1.2f;
     private float _fallingMaxSpeed = 1f;
     
     private Callback _completeCallback;
 
     public FallingManager()
     {
-        _isStarting = false;
-        _isFalling  = false;
-        _grid       = null;
-        _items      = new List<GameObject>();
+        _isStarting  = false;
+        _isFalling   = false;
+        _grid        = null;
+        _items       = new List<GameObject>();
+        _removeItems = new List<GameObject>();
 
         _completeCallback = null;
     }
@@ -55,30 +53,32 @@ public class FallingManager
      */
     public void step(float deltaTime)
     {
-        if (!_isFalling || !isStarting) {
+        if (!_isFalling || !_isStarting) {
             return;
         }
 
         bool finish = true;
 
-        float speed = _fallingSpeed * deltaTime;
+        float speed    = _fallingSpeed * deltaTime;
+        float sqrSpeed = speed * speed;
 
         for (int i = 0; i < _items.Count; i++) {
-            if (_items[i].transform.localPosition != Vector3.zero) {
-                _items[i].transform.localPosition = Vector3.Lerp(_items[i].transform.localPosition,
-                                                                 Vector3.zero, speed);
+            if (_items[i].transform.localPosition.sqrMagnitude < sqrSpeed) {
+                _items[i].transform.localPosition = Vector3.zero;
+            } else {
+                _items[i].transform.localPosition -= _items[i].transform.localPosition.normalized * speed;
 
-                if (_items[i].transform.localPosition == Vector3.zero) {
-                    if (_removeItems.Contains(_items[i])) {
-                        GameObject.Destroy(_items[i]);
-                    }
-                } else {
+                if (finish) {
                     finish = false;
                 }
             }
         }
 
         if (finish) {
+            for (int i = 0; i < _removeItems.Count; i++) {
+                GameObject.Destroy(_removeItems[i]);
+            }
+
             _isFalling = false;
             _checkFallingChips();
         }
@@ -116,7 +116,6 @@ public class FallingManager
         _removeItems.Clear();
 
         Cell cell;
-        Chip chip;
 
         int i, j;
 
@@ -124,17 +123,17 @@ public class FallingManager
             for (j = 0; j < _grid.getColCount(); j++) {
                 cell = _grid.getCell(i, j);
 
-                if (cell.isEmpty() && cell.canEnter()) {
-                    chip = cell.takeChip();
+                if (cell != null && cell.isEmpty() && cell.canEnter()) {
+                    cell.takeChip(0);
                 }
             }
         }
 
-        for (i = 1; i < _grid.getRowCount(); i++) {
+        for (i = 0; i < _grid.getRowCount(); i++) {
             for (j = 0; j < _grid.getColCount(); j++) {
                 cell = _grid.getCell(i, j);
 
-                if (!cell(i, j).isEmpty() && cell.chip.transform.localPosition != Vector3.zero) {
+                if (cell != null && !cell.isEmpty() && cell.chip.transform.localPosition != Vector3.zero) {
                     _items.Add(cell.chip.gameObject);
 
                     if (!cell.canEnter()) {
@@ -144,8 +143,15 @@ public class FallingManager
             }
         }
 
-        if (_items.Count <= 0 && _completeCallback != null) {
-            _completeCallback();
+        Debug.LogError("ITEMS:" + _items.Count);
+        Debug.LogError("REMOVE_ITEMS:" + _removeItems.Count);
+
+        if (_items.Count <= 0) {
+            _isStarting = false;
+
+            if (_completeCallback != null) {
+                _completeCallback();
+            }
         } else {
             _isFalling = true;
         }

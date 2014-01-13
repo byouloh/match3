@@ -51,6 +51,7 @@ public class Cell: MonoBehaviour, IExplodable, ICellInfluence
     {
         // создаем контейнер для блокирующих элементов.
         GameObject blockersRoot = new GameObject("blockersRoot");
+
         blockersRoot.transform.parent        = gameObject.transform;
         blockersRoot.transform.localPosition = Vector3.zero;
 
@@ -110,9 +111,9 @@ public class Cell: MonoBehaviour, IExplodable, ICellInfluence
      * 
      * @return Возвращает фишку, если она создана или найдена, иначе null
      */
-    public Chip takeChip()
+    public Chip takeChip(int depth)
     {
-        return _cellBehaviour.takeChip();
+        return _cellBehaviour.takeChip(depth);
     }
 
     /**
