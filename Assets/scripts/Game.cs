@@ -10,10 +10,10 @@ using System.Collections.Generic;
 public class Game: MonoBehaviour
 {
     /** Время ожидания подсказски. */
-    const int SHOW_HELP_INTERVAL = 4;
+    const int SHOW_HELP_INTERVAL = 2;
     
     /** Интервал между ходом и показом подсказски. */
-    const int HELP_TIMEOUT = 13;
+    const int HELP_TIMEOUT = 3;
     
     /** Экземпляр класса. */
     private static Game _instance = null;
@@ -70,6 +70,9 @@ public class Game: MonoBehaviour
     
     /** Класс, который взрывает фишки. */
     private LinesExploder _linesExploder;
+
+    /** Класс ответственный за падение фишек. */
+    private FallingManager _fallingManager;
     
     /**
      * Возвращает экземпляр класса.
@@ -97,6 +100,8 @@ public class Game: MonoBehaviour
         _matchDetector.setGrid(_grid);
         _strokeTime = Time.time;
         _lastHelpTime = 0;
+
+        _fallingManager = new FallingManager();
         
         Vector3 offset = Camera.main.WorldToScreenPoint(cellsRoot.transform.position + new Vector3(-Grid.CELL_WIDTH * 0.5f, Grid.CELL_HEIGHT * 0.5f, 0));
         Vector3 cellSize = offset - Camera.main.WorldToScreenPoint(cellsRoot.transform.position + new Vector3(Grid.CELL_WIDTH * 0.5f, -Grid.CELL_HEIGHT * 0.5f, 0));
@@ -126,6 +131,9 @@ public class Game: MonoBehaviour
                 if (swapResult.lines != null) {
                     onMoved();
                     _linesExploder.start(swapResult);
+
+                    // Вызываем падение фишек
+                    _fallingManager.start(_grid, null);
                 }
             }
         }
@@ -148,7 +156,7 @@ public class Game: MonoBehaviour
      */
     void OnGUI()
 	{
-        if (GUI.Button(new Rect(Screen.width / 2 - 100, Screen.height / 2 + 200, 100, 40), "сделали ход")) {
+        if (GUI.Button(new Rect(Screen.width  + 100, Screen.height  + 200, 100, 40), "сделали ход")) {
             // Запуск поиска подсказки
             _strokeTime = Time.time;
             _helpMatch  = _matchDetector.findHelpMatch();
@@ -318,7 +326,10 @@ public class Game: MonoBehaviour
     /** Вызывается когда пользователь сделал ход. */
     private void onMoved()
     {
+        // Перерасчет очков.
         this.level.remainingMoves--;
         movesLabel.text = "Moves: " + this.level.remainingMoves;
+
+
     }
 }

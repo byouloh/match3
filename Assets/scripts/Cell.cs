@@ -53,6 +53,17 @@ public class Cell: MonoBehaviour, IExplodable, ICellInfluence
         return _blockers.canEnter() && _cellBehaviour.canEnter();
     }
 	
+    /** Является ли ячейка пустой. */
+    public bool isEmpty()
+    {
+        if (chip == null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
     /** Определяет возможность создать фишку внутри ячейки. */
     public bool canContainChip()
     {
