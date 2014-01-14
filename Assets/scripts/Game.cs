@@ -196,16 +196,16 @@ public class Game: MonoBehaviour
      */
     private void _findHelpMatch()
     {
-        _helpMatch = null;
+        //_helpMatch = null;
 
-        /*
+  
         _strokeTime   = Time.time;
         _lastHelpTime = 0;
         _helpMatch    = _matchDetector.findHelpMatch();
 
         if (_helpMatch == null) {
             remixGrid();
-        }*/
+        }
     }
   
     /**

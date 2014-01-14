@@ -19,24 +19,47 @@ public class FallingManager
     }
 
 	private List<GameObject> _items;
+
+    /**
+     * Обьекты которые мы будем удалять.
+     */
     private List<GameObject> _removeItems;
+
+  
+
+    /**
+     * Сетка ячеек которые мы обрабатываем.
+     */
     private Grid _grid;
 
     /**
-     * 
+     * Запущен ли процесс падения фишек и заполнения пустых ячеек.
      */
     private bool _isStarting;
 
     /**
-     * 
+     * Упалили все фишки которые должны были упасть.
      */
     private bool _isFalling;
-    
+
+    /**
+     * Скорость падения фишек.
+     */
     private float _fallingSpeed    = 1.2f;
+
+    /**
+     * Максимальная скорость падения фишек.
+     */
     private float _fallingMaxSpeed = 1f;
-    
+
+    /**
+     * Callback  функция вызываемая после падения фишек.
+     */
     private Callback _completeCallback;
 
+    /**
+     * Конструктор класса.
+     */
     public FallingManager()
     {
         _isStarting  = false;
@@ -83,7 +106,10 @@ public class FallingManager
             _checkFallingChips();
         }
     }
-    
+
+    /**
+     *  Устанавливает сетку и callback функцию. 
+     */
     public void start(Grid grid, Callback completeCallback)
     {
         if (_isStarting) {
