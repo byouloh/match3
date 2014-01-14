@@ -32,7 +32,18 @@ public class NormalCell: CellBehaviour
         } else if (_cell.position.x == caller.position.x) {
             // Запрос фишки у верхней ячейки
             if (_cell.position.x > 0) {
-                chip = _grid.getCell(_cell.position.x - 1, _cell.position.y).takeChip(caller);
+                Cell cell = _grid.getCell(_cell.position.x - 1, _cell.position.y);
+
+                chip = cell.takeChip(caller);
+
+                if (chip == null && 
+                    cell.isEmpty() && 
+                    cell.canEnter() && 
+                    cell.canLeave() && 
+                    cell.canContainChip()
+                ) {
+                    return null;
+                }
 
                 // Запрос фишки у верхней ячейки слева
                 if (chip == null && _cell.position.y > 0) {
@@ -41,7 +52,11 @@ public class NormalCell: CellBehaviour
 
                 // Запрос фишки у верхней ячейки справа
                 if (chip == null && _cell.position.y < _grid.getColCount() - 1) {
-                    chip = _grid.getCell(_cell.position.x - 1, _cell.position.y + 1).takeChip(caller);
+                    cell = _grid.getCell(_cell.position.x, _cell.position.y + 1);
+
+                    if (!cell.isEmpty() && cell.canContainChip()) {
+                        chip = _grid.getCell(_cell.position.x - 1, _cell.position.y + 1).takeChip(caller);
+                    }
                 }
             }
 

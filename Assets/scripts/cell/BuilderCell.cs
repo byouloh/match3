@@ -39,7 +39,7 @@ public class BuilderCell: CellBehaviour
     /** Определяет возможность фишке покинуть ячейку. */
 	public override bool canLeave()
     {
-        return false;
+        return true;
     }
     
 	/** Определяет возможность фишке войти в ячейку. */
