@@ -4,23 +4,31 @@ public class BuilderCell: CellBehaviour
 {
     private uint _chipTypes;
 
-    public BuilderCell(IntVector2 cellPosition, Grid grid, uint chipTypes)
+    public BuilderCell(Cell cell, Grid grid, uint chipTypes)
     {
-        _cellPosition = cellPosition;
-        _grid         = grid;
-        _chipTypes    = chipTypes;
+        if (cell == null) {
+            throw new System.NullReferenceException("BuilderCell::BuilderCell: cell can not be null");
+        }
+
+        if (grid == null) {
+            throw new System.NullReferenceException("BuilderCell::BuilderCell: grid can not be null");
+        }
+
+        _cell      = cell;
+        _grid      = grid;
+        _chipTypes = chipTypes;
     }
 
-    public override Chip takeChip(int depth)
+    public override Chip takeChip(Cell caller)
     {
-        if (_grid == null) {
+        if (_grid == null || _cell == null) {
             return null;
         }
 
         Chip chip = null;
 
         try {
-            chip = _grid.createChipRandom(_chipTypes, _grid.getCell(_cellPosition.x, _cellPosition.y).gameObject);
+            chip = _grid.createChipRandom(_chipTypes, _cell.gameObject);
         } catch (System.Exception e) {
             Debug.LogError("Chip create error in BuilderCell::takeChip(), eror message: " + e.Message);
         }

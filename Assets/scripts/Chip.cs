@@ -83,4 +83,20 @@ public class Chip: MonoBehaviour, IExplodable
             _explodeCallback();
         }
     }
+
+
+    /**
+     * Возвращает копию объекта фишки.
+     */
+    public Chip clone()
+    {
+        GameObject go = GameObject.Instantiate(gameObject) as GameObject;
+        Chip chip     = go.GetComponent<Chip>();
+
+        chip.explosionPrefab = this.explosionPrefab;
+        chip.type            = this.type;
+        chip.bonusType       = this.bonusType;
+
+        return chip;
+    }
 }

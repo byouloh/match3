@@ -4,9 +4,9 @@ interface IChipTaker
     /**
      * Получает и возвращает фишку из соседней ячейки сверху.
      * 
-     * @param depth Глубина запросов ячеек на получение фишки.
+     * @param caller Ячейка, запрашивающая фишку.
      * 
      * @return Возвращает фишку, если она создана или найдена, иначе null
      */
-    Chip takeChip(int depth);
+    Chip takeChip(Cell caller);
 }

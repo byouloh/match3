@@ -67,6 +67,10 @@ public class Grid
      */
     public void setCell(int row, int col, Cell cell)
     {
+        if (cell == null) {
+            throw new System.NullReferenceException("Grid::setCell: cell can not be null");
+        }
+
         _cells[row][col] = cell;
     }
     
@@ -125,7 +129,9 @@ public class Grid
             int i = unCheckedCells[itemIndex].y;
             int j = unCheckedCells[itemIndex].x;
             
-            if (_cells[i][j] == null || _cells[i][j].chip != null || !_cells[i][j].canEnter()) {
+            if (_cells[i][j] == null || _cells[i][j].chip != null || 
+                !_cells[i][j].canEnter() || !_cells[i][j].canContainChip()
+            ) {
                 unCheckedCells.RemoveAt(itemIndex);
             } else {
                 for (int ii = 0; ii < offset.Count; ii++) {
@@ -174,7 +180,7 @@ public class Grid
             for (j = 0; j < _colCount; j++) {
                 Cell cell = getCell(i, j);
                 
-                if (cell != null && cell.chip == null) {
+                if (cell != null && cell.chip == null && cell.canContainChip()) {
                     uint ignored = getIgnoredTypes(i, j);
                     uint usingMask = chipTypes & (~ignored);
                     
@@ -237,7 +243,7 @@ public class Grid
         
         for (int i = 0; i < _rowCount; i++) {
             for (int j = 0; j < _colCount; j++) {
-                if (_cells[i][j] != null && _cells[i][j].chip == null) {
+                if (_cells[i][j].isEmpty() && _cells[i][j].canContainChip()) {
                     res.Add(new IntVector2(j, i));
                 }
             }

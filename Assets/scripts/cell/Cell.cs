@@ -29,6 +29,15 @@ public class Cell: MonoBehaviour, IExplodable, ICellInfluence
         }
     }
 
+    /** Определяет поведение ячейки применительно к фишке. */
+    public CellBehaviour cellBehaviour
+    {
+        get
+        {
+            return _cellBehaviour;
+        }
+    }
+
     /** Матричные координаты(номер строки и столбца) */
     public IntVector2 position;
 
@@ -111,9 +120,9 @@ public class Cell: MonoBehaviour, IExplodable, ICellInfluence
      * 
      * @return Возвращает фишку, если она создана или найдена, иначе null
      */
-    public Chip takeChip(int depth)
+    public Chip takeChip(Cell caller)
     {
-        return _cellBehaviour.takeChip(depth);
+        return _cellBehaviour.takeChip(caller);
     }
 
     /**

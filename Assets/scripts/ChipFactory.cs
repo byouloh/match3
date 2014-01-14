@@ -17,7 +17,7 @@ public static class ChipFactory
 		string spriteName = null;
 
 		switch (chipType) {
-			case ChipType.RED:
+            case ChipType.RED:
 				spriteName = "chipRedSprite";
 				break;
 				

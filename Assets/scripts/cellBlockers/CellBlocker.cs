@@ -4,7 +4,7 @@ using System.Collections;
 /**
  * Тип блокирующего элемента ячейки.
  */
-public enum BlockerType
+public enum BlockerType: int
 {
     /** Обычная ячейка. */
     NONE = 0,

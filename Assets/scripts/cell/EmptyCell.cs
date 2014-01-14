@@ -1,7 +1,7 @@
 
 public class EmptyCell: CellBehaviour
 {
-    public override Chip takeChip(int depth)
+    public override Chip takeChip(Cell caller)
     {
         return null;
     }

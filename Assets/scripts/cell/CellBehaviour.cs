@@ -1,10 +1,19 @@
 
+/** макс. 16 значений. */
+public enum CellType
+{
+    EMPTY = 0,
+    NORMAL,
+    BUILDER,
+    TELEPORTER
+}
+
 public abstract class CellBehaviour: IChipTaker, ICellInfluence
 {
-    protected IntVector2 _cellPosition;
+    protected Cell _cell;
     protected Grid _grid;
 
-    public abstract Chip takeChip(int depth);
+    public abstract Chip takeChip(Cell caller);
 
     /** Определяет возможность фишке покинуть ячейку. */
     public abstract bool canLeave();
