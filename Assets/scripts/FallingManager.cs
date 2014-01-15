@@ -80,6 +80,7 @@ public class FallingManager
                 float speed = ((_items[i].transform.localPosition.x != 0) ? diagonalSpeed : verticalSpeed);
 
                 _items[i].transform.localPosition -= _items[i].transform.localPosition.normalized * speed;
+                _items[i].transform.localScale = new Vector3(2.05F, 2.05F, 1);
 
                 if (isFallingComplete) {
                     isFallingComplete = false;

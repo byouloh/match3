@@ -74,7 +74,7 @@ public abstract class CellBlocker: MonoBehaviour, IExplodable, ICellInfluence
 
         if (gameObject.transform.parent != null) {
             gm.transform.parent        = gameObject.transform.parent;
-            gm.transform.localPosition = Vector3.zero;
+            gm.transform.localPosition = new Vector3(0F, 0F, Game.TOP_Z_INDEX);
         }
 
         return true;

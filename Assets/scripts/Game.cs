@@ -9,6 +9,17 @@ using System.Collections.Generic;
  */
 public class Game: MonoBehaviour
 {
+    /**
+     * Координата z маски ячейки.
+     */
+    public const float CELL_MASK_Z_INDEX = -0.2F;
+
+    /**
+     * Координата z всех видимых в любом случае элементов.
+     */
+    public const float TOP_Z_INDEX = -0.3F;
+
+
     /** Время ожидания подсказски. */
     const int SHOW_HELP_INTERVAL = 2;
     
@@ -153,6 +164,7 @@ public class Game: MonoBehaviour
         ) {
             for (int i = 0; i < _helpMatch.Count; i++) {
                 _helpMatch[i].chip.GetComponent<Animator>().SetTrigger("flicker");
+                _helpMatch[i].chip.GetComponent<Animator>().speed = 0.1F;
             }
             
             _lastHelpTime = Time.time;

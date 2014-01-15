@@ -36,6 +36,14 @@ public static class CellFactory
             throw new System.NullReferenceException("Ошибка! На префабе нет компоненты Cell");
         }
 
+        // Создание маски.
+        GameObject maskPrefab = Resources.Load<GameObject>("prefabs/cellMask");
+        GameObject mask       = null;
+
+        if (maskPrefab == null) {
+            throw new System.NullReferenceException("Ошибка! Не удалось загрузить префаб маски для ячеки");
+        }
+
         // Инициализация ячейки
         CellBehaviour behaviour = null;
 
@@ -59,10 +67,20 @@ public static class CellFactory
 
             case CellType.BUILDER:
                 behaviour = new BuilderCell(cell, grid, chipTypes);
+
+                mask = (GameObject)UnityEngine.Object.Instantiate(maskPrefab);
+                mask.transform.parent        = cell.transform;
+                mask.transform.localPosition = new Vector3(0f, 0f, Game.CELL_MASK_Z_INDEX);
+
                 break;
 
             case CellType.TELEPORTER:
                 behaviour = new TeleporterCell(cell, grid);
+
+                mask = (GameObject)UnityEngine.Object.Instantiate(maskPrefab);
+                mask.transform.parent        = cell.transform;
+                mask.transform.localPosition = new Vector3(0f, 0f, Game.CELL_MASK_Z_INDEX);
+
                 break;
 
             default:
