@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections.Generic;
 
 /**
  * Информация об уровне
@@ -39,4 +38,10 @@ public class Level
     
     /** Количество очков для получения третьей звезды. */
     public int needPointsThirdStar;
+    
+    /** Информация о фишках по типу бонуса. */
+    public List<ChipInfo> chipsInfo;
+    
+    /** Информация о блокирующих элементах. */
+    public List<BlockerInfo> blockersInfo;
 }

@@ -20,8 +20,11 @@ public class ScoreLabelAnim : MonoBehaviour
     /** Текущее время выполнения анимации. */
     private float _currentTime;
     
-    /** Инициализация. */
-    void Start () {
+    /**
+     * Инициализация.
+     */
+    void Start()
+    {
         _uiLabelScript = GetComponent<UILabel>();
         
         if (_uiLabelScript == null) {
@@ -31,7 +34,9 @@ public class ScoreLabelAnim : MonoBehaviour
         }
 	}
     
-    /** Событие при включении(активации) скрипта. */
+    /**
+     * Событие при включении(активации) скрипта.
+     */
     void OnEnable()
     {
         _uiLabelScript = GetComponent<UILabel>();
@@ -41,8 +46,11 @@ public class ScoreLabelAnim : MonoBehaviour
         }
     }
 	
-    /** Обновление позиции в каждом кадре. */
-	void Update () {
+    /**
+     * Обновление позиции в каждом кадре.
+     */
+	void Update()
+    {
         _currentTime += Time.deltaTime;
         
         if (_currentTime >= time) {

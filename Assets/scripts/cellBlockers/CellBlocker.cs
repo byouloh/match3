@@ -26,6 +26,9 @@ public abstract class CellBlocker: MonoBehaviour, IExplodable
 	/** Обработчик события по окончании взрыва. */
 	private Callback _explodeCallback;
     
+    /** Количество очков, за взрыв ячейки. */
+    private uint _explodePoints;
+    
 	/** Префаб анимации взрыва. */
     public GameObject explosionPrefab = null;
     
@@ -75,6 +78,14 @@ public abstract class CellBlocker: MonoBehaviour, IExplodable
     }
     
     /**
+     * Должен ли взорваться блокирующий элемент при вызове функции explode().
+     */
+    public bool canExplode()
+    {
+        return explosionPrefab != null;
+    }
+    
+    /**
      * Обработчик события окончании проигрывания анимации взрыва.
      * 
      * @param self взорвавшийся объект
@@ -105,4 +116,25 @@ public abstract class CellBlocker: MonoBehaviour, IExplodable
 	{
 		return BlockerType.NONE;
 	}
+    
+    
+    /**
+     * Возвращает количество очков за взрыв объекта.
+     * 
+     * @return uint количество очков за взрыв объекта
+     */
+    public uint getExplodePoints()
+    {
+        return _explodePoints;
+    }
+    
+    /**
+     * Задает количество очков за взрыв объекта.
+     * 
+     * @param explodePoints количество очков за взрыв объекта
+     */
+    public void setExplodePoints(uint explodePoints)
+    {
+        _explodePoints = explodePoints;
+    }
 }

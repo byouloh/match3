@@ -277,6 +277,28 @@ public class Grid
     }
     
     /**
+     * Меняет тип фишки в ячейке.
+     * 
+     * @param cell изменяемая ячейка
+     * @param chipType нужный тип фишки
+     * @param bonusType тип бонуса для фишки
+     */
+    public void changeChipType(Cell cell, ChipType chipType, BonusType bonusType)
+    {
+        GameObject parent;
+        
+        if (cell.chip == null) {
+            parent = cell.gameObject;
+        } else {
+            parent = cell.chip.transform.parent.gameObject;
+            UnityEngine.Object.Destroy(cell.chip.gameObject);
+            cell.chip = null;
+        }
+        
+        cell.chip = ChipFactory.createNew(chipType, bonusType, parent);
+    }
+    
+    /**
      * Проверяет есть ли в списке векторок IntVector2 элемент с координатами (x,y)
      * 
      * @param list исходным массив векторов

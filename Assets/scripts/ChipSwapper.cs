@@ -28,7 +28,7 @@ public class ChipSwapper
     private float MOVE_MOUSE_RADIUS;
     
     /** Скорость перемещения фишек. */
-    private float SWAP_SPEED = 0.1f;
+    private float SWAP_SPEED = 8f;
     
     /** Состояние перестановки фишек. */
     private SwapState _state;
@@ -68,6 +68,13 @@ public class ChipSwapper
         
         this._state      = SwapState.MS_READY;
         this._grid       = grid;
+        this._offset     = leftTopOffset;
+        this._cellWidth  = cellWidth;
+        this._cellHeight = cellHeight;
+    }
+    
+    public void changeSize(IntVector2 leftTopOffset, int cellWidth, int cellHeight)
+    {
         this._offset     = leftTopOffset;
         this._cellWidth  = cellWidth;
         this._cellHeight = cellHeight;
@@ -124,10 +131,10 @@ public class ChipSwapper
         if (_state == SwapState.MS_SWAP) {
             // Перемещение фишек
             _currentCell.chip.transform.position = Vector3.Lerp(_currentCell.chip.transform.position,
-                                                                _targetCell.transform.position, SWAP_SPEED);
+                                                                _targetCell.transform.position, SWAP_SPEED * deltaTime);
             
             _targetCell.chip.transform.position  = Vector3.Lerp(_targetCell.chip.transform.position,
-                                                                _currentCell.transform.position, SWAP_SPEED);
+                                                                _currentCell.transform.position, SWAP_SPEED * deltaTime);
             
             if (Vector3.SqrMagnitude(_currentCell.chip.transform.position - _targetCell.transform.position) < 0.0005f) {
                 _currentCell.chip.transform.position = _targetCell.transform.position;
@@ -143,6 +150,16 @@ public class ChipSwapper
                 MatchDetector matchDetector = new MatchDetector();
                 matchDetector.setGrid(_grid);
                 matchDetector.findMatches();
+                
+                if (_currentCell.chip.bonusType == BonusType.SAME_TYPE || _targetCell.chip.bonusType == BonusType.SAME_TYPE ||
+                    (_currentCell.chip.bonusType != BonusType.NONE && _targetCell.chip.bonusType != BonusType.NONE)
+                ) {
+                    Match line = new Match();
+                    line.Add(_currentCell);
+                    line.Add(_targetCell);
+                    
+                    matchDetector.explosionLines.Add(line);
+                }
                 
                 if (matchDetector.explosionLines.Count > 0) {
                     _state = SwapState.MS_READY;
@@ -161,10 +178,10 @@ public class ChipSwapper
         if (_state == SwapState.MS_REVERT) {
             // Перемещение фишек в начальные ячейки
             _currentCell.chip.transform.position = Vector3.Lerp(_currentCell.chip.transform.position,
-                                                                _targetCell.transform.position, SWAP_SPEED);
+                                                                _targetCell.transform.position, SWAP_SPEED * deltaTime);
             
             _targetCell.chip.transform.position  = Vector3.Lerp(_targetCell.chip.transform.position,
-                                                                _currentCell.transform.position, SWAP_SPEED);
+                                                                _currentCell.transform.position, SWAP_SPEED * deltaTime);
             
             if (Vector3.SqrMagnitude(_currentCell.chip.transform.position - _targetCell.transform.position) < 0.0005f) {
                 _currentCell.chip.transform.position = _targetCell.transform.position;

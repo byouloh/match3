@@ -40,7 +40,7 @@ public class Game: MonoBehaviour
 	private Grid _grid;
     
     /** Информация об уровне. */
-    private Level level;
+    public Level level;
 
     /**
      * Нахождение подсказки, поиск взрывающихся линий.
@@ -196,6 +196,9 @@ public class Game: MonoBehaviour
         this.level.remainingMoves = this.level.maxMoves;
         this.level.points = 0;
         
+        // Загружаем дополнительные данные
+        loadAdditionalInfo();
+        
         scoreLabel.text = "Score: 0";
         movesLabel.text = "Moves: " + this.level.remainingMoves;
         levelLabel.text = "Level "  + levelId;
@@ -276,6 +279,7 @@ public class Game: MonoBehaviour
                         }
                     }
                     
+                    
                     c.initialize(blocker, chip, new IntVector2(j, i));
                     
                     _grid.setCell(i, j, c);
@@ -286,6 +290,24 @@ public class Game: MonoBehaviour
         // Отцентровываем контейнер для ячеек
         cellsRoot.transform.position = new Vector3(Grid.CELL_WIDTH*0.5f - Grid.CELL_WIDTH * _grid.getColCount()*0.5f,
                                                    -Grid.CELL_HEIGHT*0.5f + Grid.CELL_HEIGHT * _grid.getRowCount()*0.5f, 0);
+    }
+    
+    /** Загружает информацию о ячейках, фишках и блокирующих элементах. */
+    private void loadAdditionalInfo()
+    {
+        level.chipsInfo = new List<ChipInfo>();
+        
+        level.chipsInfo.Add(new ChipInfo(10));
+        level.chipsInfo.Add(new ChipInfo(30));
+        level.chipsInfo.Add(new ChipInfo(30));
+        level.chipsInfo.Add(new ChipInfo(50));
+        
+        level.blockersInfo = new List<BlockerInfo>();
+        level.blockersInfo.Add(new BlockerInfo(0));
+        level.blockersInfo.Add(new BlockerInfo(30));
+        level.blockersInfo.Add(new BlockerInfo(30));
+        level.blockersInfo.Add(new BlockerInfo(30));
+        level.blockersInfo.Add(new BlockerInfo(30));
     }
     
     /**
@@ -314,5 +336,20 @@ public class Game: MonoBehaviour
     {
         this.level.remainingMoves--;
         movesLabel.text = "Moves: " + this.level.remainingMoves;
+    }
+    
+    /** Возвращает матрицу ячеек. */
+    public Grid getGrid()
+    {
+        return _grid;
+    }
+    
+    /** Вызывается при изменении разрешения экрана. */
+    public void onResize()
+    {
+        Vector3 offset = Camera.main.WorldToScreenPoint(cellsRoot.transform.position + new Vector3(-Grid.CELL_WIDTH * 0.5f, Grid.CELL_HEIGHT * 0.5f, 0));
+        Vector3 cellSize = offset - Camera.main.WorldToScreenPoint(cellsRoot.transform.position + new Vector3(Grid.CELL_WIDTH * 0.5f, -Grid.CELL_HEIGHT * 0.5f, 0));
+        
+        _chipSwapper.changeSize(new IntVector2((int)offset.x, (int)offset.y), (int)Mathf.Abs(cellSize.x), (int)Mathf.Abs(cellSize.y));
     }
 }

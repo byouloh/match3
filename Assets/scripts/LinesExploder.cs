@@ -4,8 +4,10 @@ using System.Collections.Generic;
 
 /** 
  * Информация для создания бонусной фишки.
+ * 
+ * @author Timur Bogotov timur@-emagic.org
  */
-struct BonusInfo
+public class BonusInfo
 {
     /** Ячейка в которую нужно создать бонусную фишку. */
     public Cell cell;
@@ -44,6 +46,15 @@ public class LinesExploder
     /** Префаб всплывающего текста. */
     private GameObject _scorePrefab;
     
+    /* Информация о текущей переставляемой фишке. */
+    private BonusInfo _currentInfo = null;
+    
+    /* Информация о текущей переставляемой фишке. */
+    private BonusInfo _targetInfo  = null;
+    
+    /** Информация о перестановке двух фишек. */
+    private SwapResult _swapResult;
+        
     /**
      * Конструктор.
      * 
@@ -65,65 +76,22 @@ public class LinesExploder
         int i;
         int j;
         
-        List<BonusInfo> bonusChips = new List<BonusInfo>();
+        _currentInfo = null;
+        _targetInfo  = null;
         
-        if (swapResult.lines.Count > 0) {
-            for (i = 0; i < swapResult.lines.Count; i++) {
-                Match line = swapResult.lines[i];
-                
-                if (line.Count > 0) {
-                    Vector3 lineCenter = getLineCenter(line);
-                    
-                    BonusType bType = getBonusType(line);
-                    ChipType cType = ChipType.RED;
-                    Cell bonusCell = null;
-                    
-                    for (j = 0; j < line.Count; j++) {
-                        if (line[j].chip != null) {
-                            cType = line[j].chip.type;
-                            break;
-                        }
-                    }
-                    
-                    for (j = 0; j < line.Count; j++) {
-                        if (line[j] == swapResult.currentCell || line[j] == swapResult.targetCell) {
-                            bonusCell = line[j];
-                        }
-                        
-                        line[j].explode(null);
-                    }
-                    
-                    if (bType != BonusType.NONE) {
-                        if (bonusCell == null) {
-                            bonusCell = line[line.Count - 1];
-                        }
-                        
-                        j = 0;
-                        while (j < bonusChips.Count) {
-                            if (bonusChips[j].cell == bonusCell) {
-                                if (bonusChips[j].bType == BonusType.SAME_TYPE) {
-                                    bType = BonusType.SAME_TYPE;
-                                }
-                                
-                                break;
-                            } else {
-                                j++;
-                            }
-                        }
-                        
-                        bonusChips.Add(new BonusInfo(bonusCell, cType, bType));
-                    }
-                    
-                    int pointsCount = line.Count * 10;
-                    
-                    GameObject scoreLabel = (GameObject)UnityEngine.Object.Instantiate(_scorePrefab);
-                    scoreLabel.transform.parent   = _uiRoot.transform;
-                    scoreLabel.transform.position = lineCenter;
-                    scoreLabel.GetComponent<UILabel>().text = "" + pointsCount;
-                    
-                    Game.getInstance().addPoints(pointsCount);
-                }
-            }
+        _swapResult = swapResult;
+        
+        if (swapResult.chipMoved) {
+            _currentInfo = new BonusInfo(null, swapResult.currentCell.chip.type, swapResult.currentCell.chip.bonusType);
+            _targetInfo  = new BonusInfo(null, swapResult.targetCell.chip.type, swapResult.targetCell.chip.bonusType);
+        }
+        
+        List<BonusInfo> bonusChips = getBonusChipsInfo(swapResult);
+        
+        for (i = 0; i < swapResult.lines.Count; i++) {
+            Match line = swapResult.lines[i];
+            
+            recurciveExplosion(swapResult.lines[i]);
         }
         
         // Создаем бонусные фишки
@@ -133,6 +101,127 @@ public class LinesExploder
                 bonusChips[i].cell.chip = chip;
             }
         }
+    }
+    
+    /** Рекурсивно взрывает все фишки в линии. */
+    private void recurciveExplosion(Match line)
+    {
+        int i = 0;
+        int j;
+        
+        uint explodePoints = 0;
+        
+        while (i < line.Count) {
+            Match list;
+            
+            if (line[i] == _swapResult.currentCell) {
+                list = line[i].affectCells(_targetInfo);
+            } else
+            if (line[i] == _swapResult.targetCell) {
+                list = line[i].affectCells(_currentInfo);
+            } else {
+                list = line[i].affectCells(null);
+            }
+            
+            explodePoints += line[i].getExplodePoints();
+            
+            line[i].explode(null);
+            
+            if (list != null) {
+                for (j = list.Count - 1; j >= 0; j--) {
+                    if (line.IndexOf(list[j]) >= 0) {
+                        list.RemoveAt(j);
+                    }
+                }
+                
+                recurciveExplosion(list);
+            }
+            
+            i++;
+        }
+        
+        if (explodePoints > 0 && line.Count > 0) {
+            Vector3 lineCenter = getLineCenter(line);
+            
+            GameObject scoreLabel = (GameObject)UnityEngine.Object.Instantiate(_scorePrefab);
+            scoreLabel.transform.parent   = _uiRoot.transform;
+            scoreLabel.transform.position = lineCenter;
+            scoreLabel.GetComponent<UILabel>().text = "" + explodePoints;
+            
+            Game.getInstance().addPoints((int)explodePoints);
+        }
+        
+    }
+    
+    /**
+     * Возвращает информацию о списке создаваемых бонусных фишек.
+     * 
+     * @param swapResult информация о перестановке фишек
+     * 
+     * @return List<BonusInfo> информация о списке создаваемых бонусных фишек
+     */
+    private List<BonusInfo> getBonusChipsInfo(SwapResult swapResult)
+    {
+        int i;
+        int j;
+        
+        List<BonusInfo> bonusChips = new List<BonusInfo>();
+        
+        if (swapResult.lines.Count > 0) {
+            for (i = 0; i < swapResult.lines.Count; i++) {
+                Match line = swapResult.lines[i];
+                
+                if (line.Count > 0) {
+                    BonusType bType = getBonusType(line);
+                    
+                    if (bType != BonusType.NONE) {
+                        ChipType cType  = ChipType.RED;
+                        
+                        for (j = 0; j < line.Count; j++) {
+                            if (line[j].chip != null) {
+                                cType = line[j].chip.type;
+                                break;
+                            }
+                        }
+                        
+                        Cell bonusCell  = null;
+                        
+                        if (swapResult.chipMoved) {
+                            for (j = 0; j < line.Count; j++) {
+                                if (line[j] == swapResult.currentCell || line[j] == swapResult.targetCell) {
+                                    bonusCell = line[j];
+                                }
+                            }
+                        }
+                        
+                        if (bonusCell == null) {
+                            bonusCell = line[(int)Mathf.Round(line.Count * 0.5f) - 1];
+                        }
+                        
+                        j = 0;
+                        while (j < bonusChips.Count) {
+                            if (bonusChips[j].cell == bonusCell) {
+                                if (bType <= bonusChips[j].bType) {
+                                    bType = BonusType.NONE;
+                                } else {
+                                    bonusChips.RemoveAt(j);
+                                }
+                                
+                                break;
+                            } else {
+                                j++;
+                            }
+                        }
+                        
+                        if (bType != BonusType.NONE) {
+                            bonusChips.Add(new BonusInfo(bonusCell, cType, bType));
+                        }
+                    }
+                }
+            }
+        }
+        
+        return bonusChips;
     }
     
     /**
@@ -185,9 +274,9 @@ public class LinesExploder
             return BonusType.SAME_TYPE;
         } else
         if (line[0].position.x == line[1].position.x) {
-            return BonusType.VERTICAL_STRIP;
-        } else {
             return BonusType.HORIZONTAL_STRIP;
+        } else {
+            return BonusType.VERTICAL_STRIP;
         }
         
     }

@@ -11,8 +11,7 @@ public class Cell : MonoBehaviour, IExplodable
 	public CellBlocker blocker = null;
     
     /** Обработчик события по окончании взрыва. */
-    
-	private Callback _explodeCallback = null;
+    private Callback _explodeCallback = null;
     
     /** Матричные координаты(номер строки и столбца) */
     public IntVector2 position;
@@ -26,9 +25,9 @@ public class Cell : MonoBehaviour, IExplodable
      */
 	public void initialize(CellBlocker blocker, Chip chip, IntVector2 position)
 	{
-		this.blocker  = blocker;
-		this.chip     = chip;
-        this.position = position;
+		this.blocker        = blocker;
+		this.chip           = chip;
+        this.position       = position;
 	}
     
     /** Может ли фишка покинуть ячейку. */
@@ -110,4 +109,52 @@ public class Cell : MonoBehaviour, IExplodable
 			_explodeCallback();
 		}
 	}
+    
+    /**
+     * Возвращает количество очков за взрыв объекта.
+     * 
+     * @return uint количество очков за взрыв объекта
+     */
+    public uint getExplodePoints()
+    {
+        uint res = 0;
+        
+        // Защищена ли фишка
+        bool chipProtected = false;
+        
+        if (blocker.canExplode()) {
+            if (blocker.isProtecting()) {
+                chipProtected = true;
+            }
+            
+            res += blocker.getExplodePoints();
+        }
+        
+        if (!chipProtected && chip != null && chip.canExplode()) {
+            res += chip.getExplodePoints();
+        }
+        
+        return res;
+    }
+    
+    /**
+     * Задает количество очков за взрыв объекта.
+     * 
+     * @param explodePoints количество очков за взрыв объекта
+     */
+    public void setExplodePoints(uint explodePoints)
+    {
+        // ничего не делать
+    }
+    
+    /** Возвращает список ячеек, которые взрываются после взрыва текущей ячейки. */
+    public Match affectCells(BonusInfo targetCell)
+    {
+        if (!blocker.isProtecting() && chip != null) {
+            return chip.affectCells(this, targetCell);
+        }
+        
+        return null;
+    }
+    
 }

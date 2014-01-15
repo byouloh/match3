@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 /** Тип фишки. */
 public enum ChipType
@@ -12,7 +13,10 @@ public enum ChipType
     PURPLE
 }
 
-/** Тип бонуса фишки. */
+/**
+ * Тип бонуса фишки.
+ * Чем больше порядковый номер типа бонуса, тем лучше она считается.
+ */
 public enum BonusType
 {
     /** Нет. */
@@ -40,9 +44,15 @@ public class Chip: MonoBehaviour, IExplodable
     /** Тип бонуса фишки. */
     public BonusType bonusType = BonusType.NONE;
     
+    /** Класс, который возвращает список взрываемых ячеек текущей фишкой. */
+    public IExplodeHelper explodeHelper;
+    
     /** Обработчик события окончании анимации взрыва. */
     private Callback _explodeCallback;
-
+    
+    /** Количество очков, за взрыв фишки. */
+    private uint _explodePoints;
+    
     /**
      * Взрывает фишку
      * 
@@ -68,7 +78,15 @@ public class Chip: MonoBehaviour, IExplodable
             gm.transform.parent = gameObject.transform.parent;
             gm.transform.localPosition = Vector3.zero;
         }
-
+        
+        return true;
+    }
+    
+    /**
+     * Должна ли взорваться фишка при вызове функции explode().
+     */
+    public bool canExplode()
+    {
         return true;
     }
     
@@ -82,5 +100,39 @@ public class Chip: MonoBehaviour, IExplodable
         if (_explodeCallback != null) {
             _explodeCallback();
         }
+    }
+    
+    /**
+     * Возвращает список взрываемых ячеек после взрыва текущей ячейки.
+     * 
+     * @return Match список взрываемых ячеек
+     */
+    public Match affectCells(Cell currentCell, BonusInfo targetCellInfo)
+    {
+        if (explodeHelper != null) {
+            return explodeHelper.affectCells(currentCell, targetCellInfo);
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Возвращает количество очков за взрыв объекта.
+     * 
+     * @return uint количество очков за взрыв объекта
+     */
+    public uint getExplodePoints()
+    {
+        return _explodePoints;
+    }
+    
+    /**
+     * Задает количество очков за взрыв объекта.
+     * 
+     * @param explodePoints количество очков за взрыв объекта
+     */
+    public void setExplodePoints(uint explodePoints)
+    {
+        _explodePoints = explodePoints;
     }
 }
