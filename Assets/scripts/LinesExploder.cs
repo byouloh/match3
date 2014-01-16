@@ -233,6 +233,11 @@ public class LinesExploder
     /**
      * Возвращает тип бонуса, который должен образоваться после уничтожения линии.
      * 
+     * - Если количество линий < 4-х, то бонус не создается;
+     * - Если количество линий больше 4-х, то создается разноцветный бонус;
+     * - Если количество линий равно 4-м: если линия горизонтальная, то вертикальный бонус, 
+     * иначе горизонтальный.
+     * 
      * @param line уничтожаемая линия
      * 
      * @return BonusType тип бонуса, который должен образоваться после уничтожения линии.
@@ -246,10 +251,9 @@ public class LinesExploder
             return BonusType.SAME_TYPE;
         } else
         if (line[0].position.x == line[1].position.x) {
-            return BonusType.HORIZONTAL_STRIP;
-        } else {
             return BonusType.VERTICAL_STRIP;
+        } else {
+            return BonusType.HORIZONTAL_STRIP;
         }
-        
     }
 }

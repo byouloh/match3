@@ -210,9 +210,10 @@ public class Game: MonoBehaviour
     /**
      * Загружает уровень.
      * 
-     * @param levelId номер уровня
+     * @param levelNum Номер уровня
+     * 
      */
-    private void loadLevel(int levelId)
+    private void loadLevel(int levelNum)
     {
         QueryResult res = DataBase.getInstance().query(
             "SELECT " +
@@ -221,7 +222,7 @@ public class Game: MonoBehaviour
                 "c.rows, c.cols, c.cells " +
             "FROM levels AS l " +
             "INNER JOIN level_cells AS c ON (c.levelNum = l.num) " +
-            "WHERE (l.num = " + levelId + ") " +
+            "WHERE (l.num = " + levelNum + ") " +
             "LIMIT 1"
         );
         
@@ -234,7 +235,7 @@ public class Game: MonoBehaviour
         
         // Данные уровня
         this.level                      = new Level();
-        this.level.levelId              = levelId;
+        this.level.levelId              = levelNum;
         this.level.maxMoves             = info.asInt("maxMoves");
         this.level.chipTypes            = (uint)info.asInt("existChips");
         this.level.needPointsFirstStar  = info.asInt("starPoints1");
@@ -245,11 +246,11 @@ public class Game: MonoBehaviour
         this.level.points = 0;
         
         // Загружаем дополнительные данные
-        _loadAdditionalInfo();
+        _loadAdditionalInfo(levelNum);
         
         scoreLabel.text = "Score: 0";
         movesLabel.text = "Moves: " + this.level.remainingMoves;
-        levelLabel.text = "Level "  + levelId;
+        levelLabel.text = "Level "  + levelNum;
         
         int i;
         int j;
@@ -362,22 +363,62 @@ public class Game: MonoBehaviour
 
     /**
      * Загружает информацию о ячейках, фишках и блокирующих элементах.
+     * 
+     * @param levelNum Номер уровня
      */
-    private void _loadAdditionalInfo()
+    private void _loadAdditionalInfo(int levelNum)
     {
-        level.chipsInfo = new List<ChipInfo>();
-        
-        level.chipsInfo.Add(new ChipInfo(10));
-        level.chipsInfo.Add(new ChipInfo(30));
-        level.chipsInfo.Add(new ChipInfo(30));
-        level.chipsInfo.Add(new ChipInfo(50));
-        
+        // Инициализация списков.
+        level.chipsInfo    = new List<ChipInfo>();
         level.blockersInfo = new List<BlockerInfo>();
-        level.blockersInfo.Add(new BlockerInfo(0));
-        level.blockersInfo.Add(new BlockerInfo(30));
-        level.blockersInfo.Add(new BlockerInfo(30));
-        level.blockersInfo.Add(new BlockerInfo(30));
-        level.blockersInfo.Add(new BlockerInfo(30));
+
+        int i;
+
+        for (i = 0; i < 4; i++) {
+            level.chipsInfo.Add(new ChipInfo(0));
+        }
+
+        for (i = 0; i < 5; i++) {
+            level.blockersInfo.Add(new BlockerInfo(0));
+        }
+
+        // Очки за блокирующие элементы
+        QueryResult res = DataBase.getInstance().query(
+            "SELECT type, points " +
+            "FROM blocker_points " +
+            "ORDER BY type ASC"
+        );
+
+        if (res.numRows() > 0) {
+            for (i = 0; i < res.numRows(); i++) {
+                int type = res[i].asInt("type");
+
+                if (type >= 0 && type < level.blockersInfo.Count) {
+                    level.blockersInfo[type].explodePoints = (uint)res[i].asInt("points");
+                }
+            }
+        } else {
+            Debug.LogWarning("Ошибка! Не удалось загрузить данные очков за блокирующие элементы из БД");
+        }
+
+        // Очки за фишки
+        res = DataBase.getInstance().query(
+            "SELECT type, points " +
+            "FROM chip_points " +
+            "ORDER BY type ASC"
+        );
+
+        if (res.numRows() > 0) {
+            for (i = 0; i < res.numRows(); i++) {
+                int type = res[i].asInt("type");
+                
+                if (type >= 0 && type < level.chipsInfo.Count) {
+                    level.chipsInfo[type].explodePoints = (uint)res[i].asInt("points");
+                }
+            }
+        } else {
+            Debug.LogWarning("Ошибка! Не удалось загрузить данные очков за фишки из БД");
+        }
     }
     
     /**
