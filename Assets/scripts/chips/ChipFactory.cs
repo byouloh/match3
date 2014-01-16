@@ -86,10 +86,10 @@ public static class ChipFactory
             throw new System.NullReferenceException("Ошибка! Не удалось загрузить префаб: " + chipName);
         }
         
-        GameObject obj = (GameObject) UnityEngine.Object.Instantiate(prefab);
+        GameObject obj = (GameObject)UnityEngine.Object.Instantiate(prefab);
         
         if (root != null) {
-            obj.transform.parent = root.transform;
+            obj.transform.parent   = root.transform;
             obj.transform.position = root.transform.position;
         }
         
@@ -109,7 +109,7 @@ public static class ChipFactory
             throw new System.NullReferenceException("Ошибка! На префабе нет компоненты CellBlocker");
         }
         
-        res.type = chipType;
+        res.type      = chipType;
         res.bonusType = bonusType;
         
         switch (bonusType) {

@@ -1,4 +1,5 @@
-﻿/**
+﻿
+/**
  * Интерфейс для взрываемых объектов.
  */
 public interface IExplodable

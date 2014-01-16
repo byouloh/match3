@@ -72,7 +72,7 @@ public class ChipSwapper
         this._cellWidth  = cellWidth;
         this._cellHeight = cellHeight;
     }
-    
+
     /**
      * Изменяет пиксельные размеры ячеек и относительное положение ячеек от левого верхнего угла экрана.
      * 
@@ -117,8 +117,8 @@ public class ChipSwapper
             if (offset.sqrMagnitude > MOVE_MOUSE_RADIUS * MOVE_MOUSE_RADIUS) {
                 IntVector2 dir = getMoveDir(offset);
                 
-                int i = _currentCell.position.y + dir.y;
-                int j = _currentCell.position.x + dir.x;
+                int i = _currentCell.position.x + dir.x;
+                int j = _currentCell.position.y + dir.y;
                 
                 if (i >= 0 && j >= 0 && i < _grid.getRowCount() && j < _grid.getColCount()) {
                     Cell cell = _grid.getCell(i, j);
@@ -227,8 +227,8 @@ public class ChipSwapper
     {
         IntVector2 index = screenToIndex(x, y);
         
-        if (index.x >= 0 && index.y >= 0 && index.x < _grid.getColCount() && index.y < _grid.getRowCount()) {
-            return _grid.getCell(index.y, index.x);
+        if (index.x >= 0 && index.y >= 0 && index.x < _grid.getRowCount() && index.y < _grid.getColCount()) {
+            return _grid.getCell(index.x, index.y);
         } else {
             return null;
         }
@@ -247,7 +247,7 @@ public class ChipSwapper
         int dx = (x - _offset.x) / _cellWidth;
         int dy = (_offset.y - y) / _cellHeight;
         
-        return new IntVector2(dx, dy);
+        return new IntVector2(dy, dx);
     }
     
     /**
@@ -256,15 +256,15 @@ public class ChipSwapper
     private IntVector2 getMoveDir(Vector3 dir)
     {
         if (Vector3.Angle(dir, Vector3.right) <= 45) {
-            return new IntVector2(1, 0);
+            return IntVector2.rigth;
         } else
         if (Vector3.Angle(dir, Vector3.up) <= 45) {
-            return new IntVector2(0, -1);
+            return IntVector2.up;
         } else
         if (Vector3.Angle(dir, Vector3.left) <= 45) {
-            return new IntVector2(-1, 0);
-        } else {
-            return new IntVector2(0, 1);
+            return IntVector2.left;
         }
+
+        return IntVector2.down;
     }
 }

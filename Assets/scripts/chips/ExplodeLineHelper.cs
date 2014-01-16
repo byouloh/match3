@@ -43,8 +43,8 @@ public class ExplodeLineHelper: IExplodeHelper
         
         for (int i = 0; i < n; i++) {
             Cell cell = (_bonusType == BonusType.HORIZONTAL_STRIP)
-                        ? grid.getCell(currentCell.position.y, i)
-                        : grid.getCell(i, currentCell.position.x);
+                        ? grid.getCell(currentCell.position.x, i)
+                        : grid.getCell(i, currentCell.position.y);
             
             if (cell != null && cell != currentCell) {
                 if (cell.chip != null) {

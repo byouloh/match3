@@ -31,7 +31,7 @@ public class LinesExploder
      */
     public LinesExploder(GameObject uiRoot)
     {
-        _uiRoot = uiRoot;
+        _uiRoot      = uiRoot;
         _scorePrefab = Resources.Load<GameObject>("prefabs/scoreLabel");
     }
     
@@ -180,9 +180,9 @@ public class LinesExploder
                                 }
                                 
                                 break;
-                            } else {
-                                j++;
                             }
+
+                            j++;
                         }
                         
                         if (bType != BonusType.NONE) {

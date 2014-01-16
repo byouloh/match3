@@ -81,7 +81,7 @@ public class Chip: MonoBehaviour, IExplodable
 
         if (gameObject.transform.parent != null) {
             gm.transform.parent = gameObject.transform.parent;
-            gm.transform.localPosition = Vector3.zero;
+            gm.transform.localPosition = new Vector3(0f, 0f, Game.TOP_Z_INDEX);
         }
         
         return true;
@@ -143,4 +143,38 @@ public class Chip: MonoBehaviour, IExplodable
     {
         _explodePoints = explodePoints;
     }
+
+    /**
+     * Возвращает копию объекта фишки.
+     */
+    public Chip clone()
+    {
+        GameObject go = GameObject.Instantiate(gameObject) as GameObject;
+        Chip chip     = go.GetComponent<Chip>();
+
+        chip.explosionPrefab = this.explosionPrefab;
+        chip.type            = this.type;
+        chip.bonusType       = this.bonusType;
+
+        return chip;
+    }
+
+    /**
+     * Проверка фишки на соответствие с другой фишкой.
+     * 
+     * @param chip Фишка, с которой нужно сравнить.
+     */
+    public bool compareTo(Chip chip)
+    {
+        if (chip == null || 
+            this.bonusType == BonusType.SAME_TYPE || 
+            chip.bonusType == BonusType.SAME_TYPE || 
+            this.type != chip.type
+        ) {
+            return false;
+        }
+
+        return true;
+    }
 }
+

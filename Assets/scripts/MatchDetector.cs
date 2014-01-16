@@ -3,6 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+//#define HELPER
+
 /** Тип прохода. */
 public enum PassType: int
 {
@@ -65,7 +67,7 @@ public class MatchDetector
 
                     if ((cell1 != null) && (cell2 != null) && 
                         (cell1.chip != null) && (cell2.chip != null) &&
-                        (cell1.chip.type == cell2.chip.type)
+                        (cell1.chip.compareTo(cell2.chip))
                     ) {
                         chainLength++;
                     } else {     
@@ -100,7 +102,7 @@ public class MatchDetector
                     
                     if ((cell1 != null) && (cell2 != null) && 
                         (cell1.chip != null) && (cell2.chip != null) &&
-                        (cell1.chip.type == cell2.chip.type)
+                        (cell1.chip.compareTo(cell2.chip))
                     ) {
                         chainLength++;
                     } else {     
@@ -152,11 +154,17 @@ public class MatchDetector
 
         switch (passType) {
             case PassType.TOP_LEFT:
+
+                #if HELPER
                 Debug.Log("Вошли TOP_LEFT");
+                #endif
 
                 for (i = 0; i < _grid.getRowCount(); i++) {
                     for (j = 0; j < _grid.getColCount(); j++) {
+
+                        #if HELPER
                         Debug.Log("Обрабатываемая клетка i = " + i + " j = " + j);
+                        #endif
 
                         tmpLines = getFormedLines(new IntVector2(i, j));
                         
@@ -169,11 +177,18 @@ public class MatchDetector
                 break;
             
             case PassType.TOP_RIGHT:
+
+                #if HELPER
                 Debug.Log("Вошли TOP_RIGHT");
+                #endif
 
                 for (j = _grid.getRowCount() - 1; j > 0; j--) {
                     for (i = 0; i < _grid.getColCount(); i++) {
+
+                        #if HELPER
                         Debug.Log("Обрабатываемая клетка i = " + i + " j = " + j);
+                        #endif
+
                         tmpLines = getFormedLines(new IntVector2(i, j));
                         
                         if (tmpLines.Count > 0) {
@@ -185,11 +200,18 @@ public class MatchDetector
                 break;
             
             case PassType.BOTTOM_LEFT:
+
+                #if HELPER
                 Debug.Log("Вошли BOTTOM_LEFT");
+                #endif
 
                 for (j = 0; j < _grid.getRowCount(); j++) {
                     for (i = _grid.getColCount() - 1; i > 0 ; i--) {
+
+                        #if HELPER
                         Debug.Log("Обрабатываемая клетка i = " + i + " j = " + j);
+                        #endif
+
                         tmpLines = getFormedLines(new IntVector2(i, j));
                         
                         if (tmpLines.Count > 0) {
@@ -201,11 +223,19 @@ public class MatchDetector
                 break;
             
             case PassType.BOTTOM_RIGHT:
+
+                #if HELPER
                 Debug.Log("Вошли BOTTOM_RIGHT");
+                #endif
+
 
                 for (i = _grid.getColCount() - 1; i > 0; i--) {
                     for (j = _grid.getRowCount() - 1; j > 0; j--) {
+
+                        #if HELPER
                         Debug.Log("Обрабатываемая клетка i = " + i + " j = " + j);
+                        #endif
+
                         tmpLines = getFormedLines(new IntVector2(i, j));
                         
                         if (tmpLines.Count > 0) {
@@ -259,12 +289,20 @@ public class MatchDetector
         if ((_grid.getCell(cell.x, cell.y) == null) ||
             (_grid.getCell(cell.x, cell.y).chip == null)
         ) {
+
+            #if HELPER
             Debug.Log("клетки или фишки нет [" + cell.x + ", " + cell.y + "]");
+            #endif
+
             return new Lines();
         }
 
         for (int i = 0; i < 4; i++) {
+
+            #if HELPER
             Debug.Log("направление " + i + "        0 - up, 1 - down, 2 - left, 3 - rigth   для клетки[" + cell.x + ", " + cell.y + "]");
+            #endif
+
             lines = getFormedLinesForSide(cell, directions[i]);
 
             if (lines.Count > 0) {
@@ -277,13 +315,15 @@ public class MatchDetector
 
     Lines getFormedLinesForSide(IntVector2 cell, IntVector2 offset) 
     {
+        #if HELPER
         Debug.Log(" << slide , cell [" + cell.x + "][" + cell.y + "] offset  = (" + offset.x + ", " + offset.y + ") ");
+        #endif
+
         Lines foundMatch = new Lines();
         
         int verticalMatch;
         int horisontalMatch;
 
-        ChipType useCell;
         IntVector2 cellCoordinates;
 
         cellCoordinates.x = cell.x + offset.x;
@@ -291,35 +331,57 @@ public class MatchDetector
 
         // Если куда мы можем переставить выходит за поле по х
         if ((cellCoordinates.x < 0) || (cellCoordinates.x > (_grid.getColCount() - 1))) {
+            #if HELPER
             Debug.Log("Клетка вышла за сетку по x < cell [" + cell.x + "][" + cell.y + "]");
+            #endif
+
             return foundMatch;
         }
 
         // Если куда мы можем переставить выходит за поле по y
         if ((cellCoordinates.y < 0) || (cellCoordinates.y > (_grid.getRowCount() - 1))) {
+            #if HELPER
             Debug.Log("Клетка вышла за сетку по y < cell [" + cell.x + "][" + cell.y + "]");
+            #endif
+
             return foundMatch;
         }
 
         // Если клетка не существует или на ней нет фишки
         if (_grid.getCell(cellCoordinates.x, cellCoordinates.y) == null) {
+            #if HELPER
             Debug.Log("Клетка не существует < cell [" + cellCoordinates.x + "][" + cellCoordinates.y + "] для клетки [" + cell.x + "][" + cell.y + "]");
+            #endif  
+
+            return foundMatch;
+        } else if (_grid.getCell(cellCoordinates.x, cellCoordinates.y).chip == null) {
+            #if HELPER
+            Debug.Log("фишки на клетке нет < cell [" + cellCoordinates.x + "][" + cellCoordinates.y + "] для клетки [" + cell.x + "][" + cell.y + "]");
+            #endif
+
             return foundMatch;
         } else {
-            if (_grid.getCell(cellCoordinates.x, cellCoordinates.y).chip == null) {
-                Debug.Log("фишки на клетке нет < cell [" + cellCoordinates.x + "][" + cellCoordinates.y + "] для клетки [" + cell.x + "][" + cell.y + "]");
-                return foundMatch;
-            } else {
-                Debug.Log("клетка существует и на ней есть фишка < cell [" + cellCoordinates.x + "][" + cellCoordinates.y + "] для клетки [" + cell.x + "][" + cell.y + "]");
-            }
+            #if HELPER
+            Debug.Log("клетка существует и на ней есть фишка < cell [" + cellCoordinates.x + "][" + cellCoordinates.y + "] для клетки [" + cell.x + "][" + cell.y + "]");
+            #endif   
         }
+
         // Если клетки одинаковые то выходим 
-        if (_grid.getCell(cell.x, cell.y).chip.type == _grid.getCell(cellCoordinates.x, cellCoordinates.y).chip.type) {
+        if (_grid.getCell(cell.x, cell.y).chip.compareTo(_grid.getCell(cellCoordinates.x, cellCoordinates.y).chip)) {
+            #if HELPER
             Debug.Log("Клетки одинаковые < cell [" + cellCoordinates.x + "][" + cellCoordinates.y + "] для клетки [" + cell.x + "][" + cell.y + "]");
+            #endif
+
             return foundMatch;
         }
 
-        useCell = _grid.getCell(cell.x, cell.y).chip.type;
+        if (!_grid.getCell(cell.x, cell.y).canLeave() || 
+            !_grid.getCell(cellCoordinates.x, cellCoordinates.y).canEnter()
+        ) {
+            return foundMatch;
+        }
+
+        Chip useChip = _grid.getCell(cell.x, cell.y).chip;
 
         int topX    = cellCoordinates.x;
         int bottomX = cellCoordinates.x;
@@ -333,22 +395,38 @@ public class MatchDetector
 
 
         if ((offset.x == 1) && (offset.y == 0)) {
+
+            #if HELPER
             Debug.Log("клетка которую мы передвигаем с верху cell [" + cell.x + "][" + cell.y + "]");
+            #endif
+
             canUp = false;
         }
 
         if ((offset.x == -1) && (offset.y == 0)) {
+
+            #if HELPER
             Debug.Log("клетка которую мы передвигаем с низу cell [" + cell.x + "][" + cell.y + "]");
+            #endif
+
             canDown = false;
         }
 
         if ((offset.x == 0) && (offset.y == 1)) {
+
+            #if HELPER
             Debug.Log("клетка которую мы передвигаем слева cell [" + cell.x + "][" + cell.y + "]");
+            #endif
+
             canLeft = false;
         }
 
         if ((offset.x == 0) && (offset.y == -1)) {
+
+            #if HELPER
             Debug.Log("клетка которую мы передвигаем с права cell [" + cell.x + "][" + cell.y + "]");
+            #endif
+
             canRight = false;
         }
         
@@ -358,7 +436,7 @@ public class MatchDetector
                 if (((topX - 1) >= 0) && 
                     (_grid.getCell((topX - 1), cellCoordinates.y) != null) &&
                     (_grid.getCell((topX - 1), cellCoordinates.y).chip != null) && 
-                    (_grid.getCell((topX - 1), cellCoordinates.y).chip.type == useCell)
+                    (_grid.getCell((topX - 1), cellCoordinates.y).chip.compareTo(useChip))
                 ) {
                     topX -= 1;
                 } else {
@@ -371,7 +449,7 @@ public class MatchDetector
                 if (((bottomX + 1) < _grid.getRowCount()) &&
                     (_grid.getCell((bottomX + 1), cellCoordinates.y) != null) &&
                     (_grid.getCell((bottomX + 1), cellCoordinates.y).chip != null) &&
-                    (_grid.getCell((bottomX + 1), cellCoordinates.y).chip.type == useCell)
+                    (_grid.getCell((bottomX + 1), cellCoordinates.y).chip.compareTo(useChip))
                 ) {
                     bottomX += 1;
                 } else {
@@ -384,7 +462,7 @@ public class MatchDetector
                 if (((leftY - 1) >= 0) && 
                     (_grid.getCell(cellCoordinates.x, (leftY - 1)) != null) &&
                     (_grid.getCell(cellCoordinates.x, (leftY - 1)).chip != null) &&
-                    (_grid.getCell(cellCoordinates.x, (leftY - 1)).chip.type == useCell) 
+                    (_grid.getCell(cellCoordinates.x, (leftY - 1)).chip.compareTo(useChip))
                 ) {
                     leftY -= 1;
                 } else {
@@ -396,7 +474,7 @@ public class MatchDetector
                 if (((rightY + 1) < _grid.getColCount()) && 
                     (_grid.getCell(cellCoordinates.x, (rightY + 1)) != null) &&
                     (_grid.getCell(cellCoordinates.x, (rightY + 1)).chip != null) &&
-                    (_grid.getCell(cellCoordinates.x, (rightY + 1)).chip.type == useCell)
+                    (_grid.getCell(cellCoordinates.x, (rightY + 1)).chip.compareTo(useChip))
                 ) {
                     rightY += 1;
                 } else {
@@ -418,12 +496,20 @@ public class MatchDetector
 
             for (int i = topX; i <= bottomX ; i++ ) {
                 if (i != cellCoordinates.x) {
+
+                    #if HELPER
                     Debug.Log("клетка i вертикали " + (i - topX + 1));
                     Debug.Log("x = " + i + " y = " + (cell.y + offset.y));
+                    #endif
+
                     tmpMatch.Add(_grid.getCell(i, (cell.y + offset.y)));
                 }
             }
+
+            #if HELPER
             Debug.Log("x = " + cell.x + " y = " + cell.y);
+            #endif
+
             tmpMatch.Add(_grid.getCell(cell.x, cell.y));
             foundMatch.Add(tmpMatch);
         }
@@ -437,12 +523,20 @@ public class MatchDetector
 
             for (int i = leftY; i <= rightY ; i++ ) {
                 if (i != cellCoordinates.y) {
+
+                    #if HELPER
                     Debug.Log("клетка i по горизонтали " + (i - leftY + 1));
                     Debug.Log("x = " + (cell.x + offset.x) + " y = " + i);
+                    #endif
+
                     tmpMatch.Add(_grid.getCell((cell.x + offset.x), i));
                 }
             }
+
+            #if HELPER
             Debug.Log("x = " + cell.x + " y = " + cell.y);
+            #endif
+
             tmpMatch.Add(_grid.getCell(cell.x, cell.y));
             foundMatch.Add(tmpMatch);
         }
