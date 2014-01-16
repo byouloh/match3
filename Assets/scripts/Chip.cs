@@ -84,7 +84,6 @@ public class Chip: MonoBehaviour, IExplodable
         }
     }
 
-
     /**
      * Возвращает копию объекта фишки.
      */
@@ -98,5 +97,23 @@ public class Chip: MonoBehaviour, IExplodable
         chip.bonusType       = this.bonusType;
 
         return chip;
+    }
+
+    /**
+     * Проверка фишки на соответствие с другой фишкой.
+     * 
+     * @param chip Фишка, с которой нужно сравнить.
+     */
+    public bool compareTo(Chip chip)
+    {
+        if (chip == null || 
+            this.bonusType == BonusType.SAME_TYPE || 
+            chip.bonusType == BonusType.SAME_TYPE || 
+            this.type != chip.type
+        ) {
+            return false;
+        }
+
+        return true;
     }
 }

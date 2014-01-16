@@ -318,54 +318,42 @@ public class Grid
         
         if (j > 1 && _cells[i][j - 2] != null && _cells[i][j - 1] != null &&
             _cells[i][j - 2].chip != null && _cells[i][j - 1].chip != null &&
-            _cells[i][j - 2].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i][j - 1].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i][j - 2].chip.type == _cells[i][j - 1].chip.type
+            _cells[i][j - 2].chip.compareTo(_cells[i][j - 1].chip)
         ) {
             res |= 1 << (int)_cells[i][j - 1].chip.type;
         }
         
         if (j < _colCount - 2 && _cells[i][j + 2] != null && _cells[i][j + 1] != null &&
             _cells[i][j + 2].chip != null && _cells[i][j + 1].chip != null &&
-            _cells[i][j + 2].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i][j + 1].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i][j + 2].chip.type == _cells[i][j + 1].chip.type
+            _cells[i][j + 2].chip.compareTo(_cells[i][j + 1].chip)
         ) {
             res |= 1 << (int)_cells[i][j + 1].chip.type;
         }
         
         if (i > 1 && _cells[i - 2][j] != null && _cells[i - 1][j] != null &&
             _cells[i - 2][j].chip != null && _cells[i - 1][j].chip != null &&
-            _cells[i - 2][j].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i - 1][j].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i - 2][j].chip.type == _cells[i - 1][j].chip.type
+            _cells[i - 2][j].chip.compareTo(_cells[i - 1][j].chip)
         ) {
             res |= 1 << (int)_cells[i - 1][j].chip.type;
         }
         
         if (i < _rowCount - 2 && _cells[i + 2][j] != null && _cells[i + 1][j] != null &&
             _cells[i + 2][j].chip != null && _cells[i + 1][j].chip != null &&
-            _cells[i + 2][j].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i + 1][j].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i + 2][j].chip.type == _cells[i + 1][j].chip.type
+            _cells[i + 2][j].chip.compareTo(_cells[i + 1][j].chip)
         ) {
             res |= 1 << (int)_cells[i + 1][j].chip.type;
         }
         
         if (j > 0 && j < _colCount - 1 && _cells[i][j - 1] != null && _cells[i][j + 1] != null &&
             _cells[i][j - 1].chip != null && _cells[i][j + 1].chip != null &&
-            _cells[i][j - 1].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i][j + 1].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i][j - 1].chip.type == _cells[i][j + 1].chip.type
+            _cells[i][j - 1].chip.compareTo(_cells[i][j + 1].chip)
         ) {
             res |= 1 << (int)_cells[i][j - 1].chip.type;
         }
         
         if (i > 0 && i < _rowCount - 1 && _cells[i - 1][j] != null && _cells[i + 1][j] != null &&
             _cells[i - 1][j].chip != null && _cells[i + 1][j].chip != null &&
-            _cells[i - 1][j].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i + 1][j].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i - 1][j].chip.type == _cells[i + 1][j].chip.type
+            _cells[i - 1][j].chip.compareTo(_cells[i + 1][j].chip)
         ) {
             res |= 1 << (int)_cells[i - 1][j].chip.type;
         }

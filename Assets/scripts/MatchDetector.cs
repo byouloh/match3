@@ -67,7 +67,7 @@ public class MatchDetector
 
                     if ((cell1 != null) && (cell2 != null) && 
                         (cell1.chip != null) && (cell2.chip != null) &&
-                        (cell1.chip.type == cell2.chip.type)
+                        (cell1.chip.compareTo(cell2.chip))
                     ) {
                         chainLength++;
                     } else {     
@@ -102,7 +102,7 @@ public class MatchDetector
                     
                     if ((cell1 != null) && (cell2 != null) && 
                         (cell1.chip != null) && (cell2.chip != null) &&
-                        (cell1.chip.type == cell2.chip.type)
+                        (cell1.chip.compareTo(cell2.chip))
                     ) {
                         chainLength++;
                     } else {     
@@ -324,7 +324,6 @@ public class MatchDetector
         int verticalMatch;
         int horisontalMatch;
 
-        ChipType useCell;
         IntVector2 cellCoordinates;
 
         cellCoordinates.x = cell.x + offset.x;
@@ -332,7 +331,6 @@ public class MatchDetector
 
         // Если куда мы можем переставить выходит за поле по х
         if ((cellCoordinates.x < 0) || (cellCoordinates.x > (_grid.getColCount() - 1))) {
-
             #if HELPER
             Debug.Log("Клетка вышла за сетку по x < cell [" + cell.x + "][" + cell.y + "]");
             #endif
@@ -342,7 +340,6 @@ public class MatchDetector
 
         // Если куда мы можем переставить выходит за поле по y
         if ((cellCoordinates.y < 0) || (cellCoordinates.y > (_grid.getRowCount() - 1))) {
-
             #if HELPER
             Debug.Log("Клетка вышла за сетку по y < cell [" + cell.x + "][" + cell.y + "]");
             #endif
@@ -352,31 +349,25 @@ public class MatchDetector
 
         // Если клетка не существует или на ней нет фишки
         if (_grid.getCell(cellCoordinates.x, cellCoordinates.y) == null) {
-
             #if HELPER
             Debug.Log("Клетка не существует < cell [" + cellCoordinates.x + "][" + cellCoordinates.y + "] для клетки [" + cell.x + "][" + cell.y + "]");
             #endif  
 
             return foundMatch;
+        } else if (_grid.getCell(cellCoordinates.x, cellCoordinates.y).chip == null) {
+            #if HELPER
+            Debug.Log("фишки на клетке нет < cell [" + cellCoordinates.x + "][" + cellCoordinates.y + "] для клетки [" + cell.x + "][" + cell.y + "]");
+            #endif
+
+            return foundMatch;
         } else {
-            if (_grid.getCell(cellCoordinates.x, cellCoordinates.y).chip == null) {
-
-                #if HELPER
-                Debug.Log("фишки на клетке нет < cell [" + cellCoordinates.x + "][" + cellCoordinates.y + "] для клетки [" + cell.x + "][" + cell.y + "]");
-                #endif
-
-                return foundMatch;
-            } else {
-
-                #if HELPER
-                Debug.Log("клетка существует и на ней есть фишка < cell [" + cellCoordinates.x + "][" + cellCoordinates.y + "] для клетки [" + cell.x + "][" + cell.y + "]");
-                #endif   
-
-            }
+            #if HELPER
+            Debug.Log("клетка существует и на ней есть фишка < cell [" + cellCoordinates.x + "][" + cellCoordinates.y + "] для клетки [" + cell.x + "][" + cell.y + "]");
+            #endif   
         }
-        // Если клетки одинаковые то выходим 
-        if (_grid.getCell(cell.x, cell.y).chip.type == _grid.getCell(cellCoordinates.x, cellCoordinates.y).chip.type) {
 
+        // Если клетки одинаковые то выходим 
+        if (_grid.getCell(cell.x, cell.y).chip.compareTo(_grid.getCell(cellCoordinates.x, cellCoordinates.y).chip)) {
             #if HELPER
             Debug.Log("Клетки одинаковые < cell [" + cellCoordinates.x + "][" + cellCoordinates.y + "] для клетки [" + cell.x + "][" + cell.y + "]");
             #endif
@@ -390,7 +381,7 @@ public class MatchDetector
             return foundMatch;
         }
 
-        useCell = _grid.getCell(cell.x, cell.y).chip.type;
+        Chip useChip = _grid.getCell(cell.x, cell.y).chip;
 
         int topX    = cellCoordinates.x;
         int bottomX = cellCoordinates.x;
@@ -445,7 +436,7 @@ public class MatchDetector
                 if (((topX - 1) >= 0) && 
                     (_grid.getCell((topX - 1), cellCoordinates.y) != null) &&
                     (_grid.getCell((topX - 1), cellCoordinates.y).chip != null) && 
-                    (_grid.getCell((topX - 1), cellCoordinates.y).chip.type == useCell)
+                    (_grid.getCell((topX - 1), cellCoordinates.y).chip.compareTo(useChip))
                 ) {
                     topX -= 1;
                 } else {
@@ -458,7 +449,7 @@ public class MatchDetector
                 if (((bottomX + 1) < _grid.getRowCount()) &&
                     (_grid.getCell((bottomX + 1), cellCoordinates.y) != null) &&
                     (_grid.getCell((bottomX + 1), cellCoordinates.y).chip != null) &&
-                    (_grid.getCell((bottomX + 1), cellCoordinates.y).chip.type == useCell)
+                    (_grid.getCell((bottomX + 1), cellCoordinates.y).chip.compareTo(useChip))
                 ) {
                     bottomX += 1;
                 } else {
@@ -471,7 +462,7 @@ public class MatchDetector
                 if (((leftY - 1) >= 0) && 
                     (_grid.getCell(cellCoordinates.x, (leftY - 1)) != null) &&
                     (_grid.getCell(cellCoordinates.x, (leftY - 1)).chip != null) &&
-                    (_grid.getCell(cellCoordinates.x, (leftY - 1)).chip.type == useCell) 
+                    (_grid.getCell(cellCoordinates.x, (leftY - 1)).chip.compareTo(useChip))
                 ) {
                     leftY -= 1;
                 } else {
@@ -483,7 +474,7 @@ public class MatchDetector
                 if (((rightY + 1) < _grid.getColCount()) && 
                     (_grid.getCell(cellCoordinates.x, (rightY + 1)) != null) &&
                     (_grid.getCell(cellCoordinates.x, (rightY + 1)).chip != null) &&
-                    (_grid.getCell(cellCoordinates.x, (rightY + 1)).chip.type == useCell)
+                    (_grid.getCell(cellCoordinates.x, (rightY + 1)).chip.compareTo(useChip))
                 ) {
                     rightY += 1;
                 } else {
