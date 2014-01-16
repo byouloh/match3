@@ -2,37 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 
-/** 
- * Информация для создания бонусной фишки.
- * 
- * @author Timur Bogotov timur@-emagic.org
- */
-public class BonusInfo
-{
-    /** Ячейка в которую нужно создать бонусную фишку. */
-    public Cell cell;
-    
-    /** Тип фишки. */
-    public ChipType cType;
-    
-    /** Тип бонуса. */
-    public BonusType bType;
-    
-    /**
-     * Конструктор.
-     * 
-     * @param cell ячейка в которую нужно создать бонусную фишку
-     * @param chipType тип фишки
-     * @param bonusType тип бонуса
-     */
-    public BonusInfo(Cell cell, ChipType chipType, BonusType bonusType)
-    {
-        this.cell  = cell;
-        this.cType = chipType;
-        this.bType = bonusType;
-    }
-}
-
 /**
  * Класс, который взрывает все найденные линии и создает бонусные фишки.
  * 
@@ -103,7 +72,11 @@ public class LinesExploder
         }
     }
     
-    /** Рекурсивно взрывает все фишки в линии. */
+    /**
+     * Рекурсивно взрывает все фишки в линии.
+     * 
+     * @param line линия, которую нужно взорвать
+     */
     private void recurciveExplosion(Match line)
     {
         int i = 0;
@@ -127,7 +100,7 @@ public class LinesExploder
             
             line[i].explode(null);
             
-            if (list != null) {
+            if (list != null && list.Count > 0) {
                 for (j = list.Count - 1; j >= 0; j--) {
                     if (line.IndexOf(list[j]) >= 0) {
                         list.RemoveAt(j);
@@ -150,7 +123,6 @@ public class LinesExploder
             
             Game.getInstance().addPoints((int)explodePoints);
         }
-        
     }
     
     /**

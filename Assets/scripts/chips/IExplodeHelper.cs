@@ -2,6 +2,8 @@
 
 /**
  * Интерфейс для классов по вычислению взрывающихся ячеек.
+ * 
+ * @author Timur Bogotov timur@e-magic.org
  */
 public interface IExplodeHelper
 {

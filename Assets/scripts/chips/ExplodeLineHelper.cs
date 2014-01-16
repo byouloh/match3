@@ -3,8 +3,10 @@ using UnityEngine;
 
 /**
  * Возвращает ячейки в строке.
+ * 
+ * @author Timur Bogotov timur-emagic.org
  */
-public class ExplodeLineHelper : IExplodeHelper
+public class ExplodeLineHelper: IExplodeHelper
 {
     /** Тип бонуса. */
     private BonusType _bonusType;
@@ -19,13 +21,21 @@ public class ExplodeLineHelper : IExplodeHelper
         _bonusType = bonusType;
     }
     
+    /**
+     * Меняет или манипулирует ячейками перед взрывом ячеек.
+     * 
+     * @param currentCell текущая ячейка
+     * @param targetCellInfo информация о фишке, которую мы переставляем вместе с текущей
+     * 
+     * @return Match список всех затрагиваемых ячеек
+     */
     public Match affectCells(Cell currentCell, BonusInfo targetCellInfo)
     {
-        if (currentCell == null) {
-            return null;
-        }
-        
         Match res = new Match();
+        
+        if (currentCell == null) {
+            return res;
+        }
         
         Grid grid = Game.getInstance().getGrid();
         

@@ -1,6 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/**
+ * Фабрика для создания фишек.
+ * 
+ * @author Timur Bogotov timur@e-magic.org
+ */
 public static class ChipFactory
 {
     /**

@@ -32,7 +32,12 @@ public enum BonusType
     SAME_TYPE
 }
 
-/** Класс фишки. */
+/**
+ * Класс фишки.
+ * 
+ * @author Azamat Bogotov azamat@e-magic.org
+ * @author Timur Bogotov timur@e-magic.org
+ */
 public class Chip: MonoBehaviour, IExplodable
 {
     /** Префаб анимации взрыва. */
@@ -104,6 +109,9 @@ public class Chip: MonoBehaviour, IExplodable
     
     /**
      * Возвращает список взрываемых ячеек после взрыва текущей ячейки.
+     * 
+     * @param currentCell текущая взрываемая ячейка
+     * @param targetCellInfo информация о второй передвигаемой фишке
      * 
      * @return Match список взрываемых ячеек
      */

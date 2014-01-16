@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-/**
+﻿/**
  * Информация о типе блокирующего элемента.
  * 
  * @author Timur Bogotov timur@e-magic.org

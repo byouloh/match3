@@ -117,7 +117,6 @@ public abstract class CellBlocker: MonoBehaviour, IExplodable
 		return BlockerType.NONE;
 	}
     
-    
     /**
      * Возвращает количество очков за взрыв объекта.
      * 

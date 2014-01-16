@@ -2,26 +2,27 @@
 
 /**
  * Возвращает ячейки в строке.
+ * 
+ * @author Timur Bogotov timur@e-magic.org
  */
-public class ExplodeSameHelper : IExplodeHelper
+public class ExplodeSameHelper: IExplodeHelper
 {
     /**
-     * Конструктор.
+     * Меняет или манипулирует ячейками перед взрывом ячеек.
      * 
-     * @param bonusType тип бонуса
+     * @param currentCell текущая ячейка
+     * @param targetCellInfo информация о фишке, которую мы переставляем вместе с текущей
+     * 
+     * @return Match список всех затрагиваемых ячеек
      */
-    public ExplodeSameHelper()
-    {
-        
-    }
-    
     public Match affectCells(Cell currentCell, BonusInfo targetCellInfo)
     {
+        Match res = new Match();
+        
         if (currentCell == null || targetCellInfo == null) {
-            return null;
+            return res;
         }
         
-        Match res = new Match();
         Grid grid = Game.getInstance().getGrid();
         
         ChipType cType  = targetCellInfo.cType;

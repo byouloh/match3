@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-/**
+﻿/**
  * Информация о типе ячейки.
  * 
  * @author Timur Bogotov timur@e-magic.org

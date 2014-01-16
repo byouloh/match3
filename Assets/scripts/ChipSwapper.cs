@@ -73,6 +73,13 @@ public class ChipSwapper
         this._cellHeight = cellHeight;
     }
     
+    /**
+     * Изменяет пиксельные размеры ячеек и относительное положение ячеек от левого верхнего угла экрана.
+     * 
+     * @param leftTopOffset относительное положение ячеек от левой верхней ячейки экрана
+     * @param cellWidth ширина ячейки в пикселях
+     * @param cellHeight высота ячейки в пикселях
+     */
     public void changeSize(IntVector2 leftTopOffset, int cellWidth, int cellHeight)
     {
         this._offset     = leftTopOffset;
