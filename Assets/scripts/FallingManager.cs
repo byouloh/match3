@@ -35,7 +35,7 @@ public class FallingManager
     /**
      * Скорость падения фишек.
      */
-    private float _fallingSpeed = 1.0f;
+    private float _fallingSpeed = 1.2f;
 
     /**
      * Callback  функция вызываемая после падения фишек.
@@ -77,10 +77,18 @@ public class FallingManager
             if (_items[i].transform.localPosition.sqrMagnitude < sqrSpeed) {
                 _items[i].transform.localPosition = Vector3.zero;
             } else {
-                float speed = ((_items[i].transform.localPosition.x != 0) ? diagonalSpeed : verticalSpeed);
+                float speed;
+                if (_items[i].transform.localPosition.x != 0) {
+                    speed = diagonalSpeed;
+
+                    _items[i].GetComponent<Animator>().speed = diagonalSpeed * 60;
+                } else {
+                    speed = verticalSpeed;
+                }
+                 
 
                 _items[i].transform.localPosition -= _items[i].transform.localPosition.normalized * speed;
-                _items[i].transform.localScale = new Vector3(2.05F, 2.05F, 1);
+
 
                 if (isFallingComplete) {
                     isFallingComplete = false;
@@ -105,7 +113,7 @@ public class FallingManager
     /**
      * Устанавливает сетку и callback функцию.
      * 
-     * @param grid             Обрабатываемая матрица ячеек.
+     * @param grid             Обрабатываемfor (int i = 0; i < _items.Count; i++) {ая матрица ячеек.
      * @param completeCallback Метод-делегат, который будет вызван после завершения падения.
      */
     public void start(Grid grid, Callback completeCallback)
@@ -185,7 +193,25 @@ public class FallingManager
             }
         } else {
             // Запуск процесса падения фишек
+            this._startFallingAnimation();
             _isFalling = true;
         }
     }
+
+    /***/
+    private void _startFallingAnimation () 
+    {
+        for (int i = 0; i < _items.Count; i++) {
+            if (_items[i].transform.localPosition.x > 0) {
+                _items[i].GetComponent<Animator>().SetTrigger("rigthDiagonalFall");
+                //_items[i].GetComponent<Animator>().speed = 1.0F;
+            } else if (_items[i].transform.localPosition.x < 0) {
+                _items[i].GetComponent<Animator>().SetTrigger("rigthDiagonalFall");
+                //_items[i].GetComponent<Animator>().speed = 1.0F;
+            } else {
+                //
+            }
+        }
+    }
+
 }

@@ -1,9 +1,9 @@
-﻿//#define HELPER
-using UnityEngine;
+﻿using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
+//#define HELPER
 
 /** Тип прохода. */
 public enum PassType: int
