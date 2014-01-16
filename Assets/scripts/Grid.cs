@@ -67,6 +67,10 @@ public class Grid
      */
     public void setCell(int row, int col, Cell cell)
     {
+        if (cell == null) {
+            throw new System.NullReferenceException("Grid::setCell: cell can not be null");
+        }
+
         _cells[row][col] = cell;
     }
     
@@ -125,7 +129,9 @@ public class Grid
             int i = unCheckedCells[itemIndex].y;
             int j = unCheckedCells[itemIndex].x;
             
-            if (_cells[i][j] == null || _cells[i][j].chip != null || !_cells[i][j].canEnter()) {
+            if (_cells[i][j] == null || _cells[i][j].chip != null || 
+                !_cells[i][j].canEnter() || !_cells[i][j].canContainChip()
+            ) {
                 unCheckedCells.RemoveAt(itemIndex);
             } else {
                 for (int ii = 0; ii < offset.Count; ii++) {
@@ -174,7 +180,7 @@ public class Grid
             for (j = 0; j < _colCount; j++) {
                 Cell cell = getCell(i, j);
                 
-                if (cell != null && cell.chip == null) {
+                if (cell != null && cell.chip == null && cell.canContainChip()) {
                     uint ignored = getIgnoredTypes(i, j);
                     uint usingMask = chipTypes & (~ignored);
                     
@@ -237,7 +243,7 @@ public class Grid
         
         for (int i = 0; i < _rowCount; i++) {
             for (int j = 0; j < _colCount; j++) {
-                if (_cells[i][j] != null && _cells[i][j].chip == null) {
+                if (_cells[i][j].isEmpty() && _cells[i][j].canContainChip()) {
                     res.Add(new IntVector2(j, i));
                 }
             }
@@ -312,54 +318,42 @@ public class Grid
         
         if (j > 1 && _cells[i][j - 2] != null && _cells[i][j - 1] != null &&
             _cells[i][j - 2].chip != null && _cells[i][j - 1].chip != null &&
-            _cells[i][j - 2].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i][j - 1].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i][j - 2].chip.type == _cells[i][j - 1].chip.type
+            _cells[i][j - 2].chip.compareTo(_cells[i][j - 1].chip)
         ) {
             res |= 1 << (int)_cells[i][j - 1].chip.type;
         }
         
         if (j < _colCount - 2 && _cells[i][j + 2] != null && _cells[i][j + 1] != null &&
             _cells[i][j + 2].chip != null && _cells[i][j + 1].chip != null &&
-            _cells[i][j + 2].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i][j + 1].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i][j + 2].chip.type == _cells[i][j + 1].chip.type
+            _cells[i][j + 2].chip.compareTo(_cells[i][j + 1].chip)
         ) {
             res |= 1 << (int)_cells[i][j + 1].chip.type;
         }
         
         if (i > 1 && _cells[i - 2][j] != null && _cells[i - 1][j] != null &&
             _cells[i - 2][j].chip != null && _cells[i - 1][j].chip != null &&
-            _cells[i - 2][j].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i - 1][j].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i - 2][j].chip.type == _cells[i - 1][j].chip.type
+            _cells[i - 2][j].chip.compareTo(_cells[i - 1][j].chip)
         ) {
             res |= 1 << (int)_cells[i - 1][j].chip.type;
         }
         
         if (i < _rowCount - 2 && _cells[i + 2][j] != null && _cells[i + 1][j] != null &&
             _cells[i + 2][j].chip != null && _cells[i + 1][j].chip != null &&
-            _cells[i + 2][j].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i + 1][j].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i + 2][j].chip.type == _cells[i + 1][j].chip.type
+            _cells[i + 2][j].chip.compareTo(_cells[i + 1][j].chip)
         ) {
             res |= 1 << (int)_cells[i + 1][j].chip.type;
         }
         
         if (j > 0 && j < _colCount - 1 && _cells[i][j - 1] != null && _cells[i][j + 1] != null &&
             _cells[i][j - 1].chip != null && _cells[i][j + 1].chip != null &&
-            _cells[i][j - 1].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i][j + 1].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i][j - 1].chip.type == _cells[i][j + 1].chip.type
+            _cells[i][j - 1].chip.compareTo(_cells[i][j + 1].chip)
         ) {
             res |= 1 << (int)_cells[i][j - 1].chip.type;
         }
         
         if (i > 0 && i < _rowCount - 1 && _cells[i - 1][j] != null && _cells[i + 1][j] != null &&
             _cells[i - 1][j].chip != null && _cells[i + 1][j].chip != null &&
-            _cells[i - 1][j].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i + 1][j].chip.bonusType != BonusType.SAME_TYPE &&
-            _cells[i - 1][j].chip.type == _cells[i + 1][j].chip.type
+            _cells[i - 1][j].chip.compareTo(_cells[i + 1][j].chip)
         ) {
             res |= 1 << (int)_cells[i - 1][j].chip.type;
         }
@@ -373,16 +367,16 @@ public class Grid
      * @param chipTypes маска используемых фишек
      * @parent контейнер для фишки
      */
-    private Chip createChipRandom(uint chipTypes, GameObject parent)
+    public Chip createChipRandom(uint chipTypes, GameObject parent)
     {
         List<ChipType> usingTypes = getChipTypesFromMask(chipTypes);
         
-        if (usingTypes.Count == 0) {
-            return null;
-        } else {
+        if (usingTypes.Count > 0) {
             return ChipFactory.createNew(usingTypes[Random.Range(0, usingTypes.Count)],
                                          BonusType.NONE, parent);
         }
+        
+        return null;
     }
     
     /**

@@ -9,21 +9,43 @@ using System.Collections.Generic;
  */
 public class Game: MonoBehaviour
 {
-    /** 
-     * Время ожидания подсказски .
+    /**
+     * Координата z маски ячейки.
      */
-    const int SHOW_HELP_INTERVAL = 4;
+    public const float CELL_MASK_Z_INDEX = -0.2F;
 
     /**
-     * Интервал между ходом и показом подсказски. 
+     * Координата z всех видимых в любом случае элементов.
      */
-    const int HELP_TIMEOUT = 13;
+    public const float TOP_Z_INDEX = -0.3F;
 
+
+    /** Время ожидания подсказски. */
+    const int SHOW_HELP_INTERVAL = 2;
+    
+    /** Интервал между ходом и показом подсказски. */
+    const int HELP_TIMEOUT = 3;
+    
+    /** Экземпляр класса. */
+    private static Game _instance = null;
+    
 	/** Контейнер для ячеек. */
 	public GameObject cellsRoot;
     
+    /** Контейнер для UI. */
+    public GameObject uiRoot;
+    
 	/** Шаблон ячейки. */
 	public GameObject cellPrefab;
+    
+    /** Текстовая метка для отображения количества очков. */
+    public UILabel scoreLabel;
+    
+    /** Текстовая метка для отображения текущего уровня. */
+    public UILabel levelLabel;
+    
+    /** Текстовая метка для отображения количества ходов. */
+    public UILabel movesLabel;
     
 	/** Матрица ячеек. */
 	private Grid _grid;
@@ -57,24 +79,55 @@ public class Game: MonoBehaviour
     /** Класс, которые переставляет две фишки. */
     private ChipSwapper _chipSwapper;
     
+    /** Класс, который взрывает фишки. */
+    private LinesExploder _linesExploder;
+
+    /** Класс ответственный за падение фишек. */
+    private FallingManager _fallingManager;
+    
+    /**
+     * Возвращает экземпляр класса.
+     * 
+     * Следит за тем, чтобы экземпляр класса был один во всем проекте.
+     * 
+     * @return Game экземпляр класса
+     */
+    public static Game getInstance()
+    {
+        return _instance;
+    }
+    
     /** Инициализация. */
-	void Start()
+	private void Start()
 	{
+        _instance = this;
+        
         _gridReshuffler = new GridReshuffler();
+        _linesExploder  = new LinesExploder(uiRoot);
+        
         loadLevel(1);
+
         _grid.generateChips(level.chipTypes);
         _matchDetector = new MatchDetector();
         _matchDetector.setGrid(_grid);
-        _strokeTime = Time.time;
+
+        _strokeTime   = Time.time;
         _lastHelpTime = 0;
+
+        _fallingManager = new FallingManager();
         
-        Vector3 offset = Camera.main.WorldToScreenPoint(cellsRoot.transform.position + new Vector3(-Grid.CELL_WIDTH * 0.5f, Grid.CELL_HEIGHT * 0.5f, 0));
+        Vector3 offset   = Camera.main.WorldToScreenPoint(cellsRoot.transform.position + new Vector3(-Grid.CELL_WIDTH * 0.5f, Grid.CELL_HEIGHT * 0.5f, 0));
         Vector3 cellSize = offset - Camera.main.WorldToScreenPoint(cellsRoot.transform.position + new Vector3(Grid.CELL_WIDTH * 0.5f, -Grid.CELL_HEIGHT * 0.5f, 0));
         
         _chipSwapper = new ChipSwapper(_grid, new IntVector2((int)offset.x, (int)offset.y), (int)Mathf.Abs(cellSize.x), (int)Mathf.Abs(cellSize.y));
+
+        _helpMatch = new Match();
     }
     
-	void Update()
+    /**
+     * Обработка текущего кадра(состояния).
+     */
+	private void Update()
 	{
 		if (Input.GetKey("p")) {
             remixGrid();
@@ -82,44 +135,93 @@ public class Game: MonoBehaviour
         
         if (_gridReshuffler.isShuffle()) {
             if (_gridReshuffler.step(Time.deltaTime)) {
-                //Debug.Log("Mix Complete");
+                _findHelpMatch();
+            }
+        } else if (_fallingManager.isStarting()) {
+            _fallingManager.step(Time.deltaTime);
+        } else {
+            SwapResult swapResult = _chipSwapper.step(Time.deltaTime);
+            
+            if (swapResult.chipMoved) {
+                _strokeTime = Time.time;
+                
+                if (swapResult.lines != null) {
+                    onMoved();
+
+                    _helpMatch.Clear();
+
+                    _linesExploder.start(swapResult);
+
+                    // Вызываем падение фишек
+                    _fallingManager.start(_grid, _onFallingComplete);
+                }
             }
         }
-        
-        _chipSwapper.step(Time.deltaTime);
-        
-        if (((Time.time - _strokeTime) > HELP_TIMEOUT) && ((Time.time - _lastHelpTime) > SHOW_HELP_INTERVAL)) {
-            if (_helpMatch != null) {
-                for (int i = 0; i < _helpMatch.Count; i++) {
-                    _helpMatch[i].chip.GetComponent<Animator>().SetTrigger("flicker");
-                }
 
-                _lastHelpTime = Time.time;
-            } else {
-                //Debug.LogError ("Линий нет"); // TODO убрать 
+        if (_helpMatch.Count > 0 && 
+            ((Time.time - _strokeTime) > HELP_TIMEOUT) && 
+            ((Time.time - _lastHelpTime) > SHOW_HELP_INTERVAL)
+        ) {
+            for (int i = 0; i < _helpMatch.Count; i++) {
+                _helpMatch[i].chip.GetComponent<Animator>().SetTrigger("flicker");
+                _helpMatch[i].chip.GetComponent<Animator>().speed = 1.0F;
             }
+            
+            _lastHelpTime = Time.time;
         }
     }
-    
+
+    /**
+     * Событие по завершению заполнения пустых клеток после взрыва.
+     */
+    private void _onFallingComplete()
+    {
+        _matchDetector.findMatches();
+        
+        if (_matchDetector.explosionLines.Count > 0) {
+            SwapResult swapResult = new SwapResult();
+
+            swapResult.chipMoved = false;
+            swapResult.lines     = _matchDetector.explosionLines;
+
+            _linesExploder.start(swapResult);
+
+            // Вызываем падение фишек
+            _helpMatch.Clear();
+            _fallingManager.start(_grid, _onFallingComplete);
+        } else {
+            _findHelpMatch();
+        }
+    }
+
+    /**
+     * Прорисовка элементов GUI.
+     */
     void OnGUI()
 	{
-        if (GUI.Button(new Rect(Screen.width / 2 - 100, Screen.height / 2 + 200, 100, 40), "сделали ход")) {
-            // Запуск поиска подсказки
-            _strokeTime = Time.time;
-            _helpMatch  = _matchDetector.findHelpMatch();
-            
-            if (_helpMatch == null) {
-                Debug.LogError("Линий нет надо вызвать перетасовку"); // TODO убрать
-            } 
-        }
+
 	}
+
+    /**
+     * Запускает поиск подсказки(поиск возможного хода).
+     */
+    private void _findHelpMatch()
+    {
+        _strokeTime   = Time.time;
+        _lastHelpTime = 0;
+        _helpMatch    = _matchDetector.findHelpMatch();
+
+        if (_helpMatch.Count <= 0) {
+            remixGrid();
+        }
+    }
   
     /**
      * Загружает уровень.
      * 
      * @param levelId номер уровня
      */
-    public void loadLevel(int levelId)
+    private void loadLevel(int levelId)
     {
         QueryResult res = DataBase.getInstance().query(
             "SELECT " +
@@ -143,13 +245,21 @@ public class Game: MonoBehaviour
         this.level                      = new Level();
         this.level.levelId              = levelId;
         this.level.maxMoves             = info.asInt("maxMoves");
-        this.level.chipTypes            = 63;// (uint)info.asInt("existChips");
+        this.level.chipTypes            = (uint)info.asInt("existChips");
         this.level.needPointsFirstStar  = info.asInt("starPoints1");
         this.level.needPointsSecondStar = info.asInt("starPoints2");
         this.level.needPointsThirdStar  = info.asInt("starPoints3");
         
+        this.level.remainingMoves = this.level.maxMoves;
+        this.level.points = 0;
+        
+        scoreLabel.text = "Score: 0";
+        movesLabel.text = "Moves: " + this.level.remainingMoves;
+        levelLabel.text = "Level "  + levelId;
+        
         int i;
         int j;
+        int k;
         
         int rowCount = info.asInt("rows");
         int colCount = info.asInt("cols");
@@ -159,91 +269,140 @@ public class Game: MonoBehaviour
         // Загружаем ячейки
         _grid = new Grid(rowCount, colCount);
         
-        string[] cellItems = cellsString.Split(',');
-        
+        string[] cellItems = cellsString.Split(';');
+
         if (cellItems.Length != _grid.getRowCount() * _grid.getColCount()) {
-            Debug.LogError("Ошибка! Неправильные данные загружаемого уровня!");
+            Debug.LogError("Ошибка! Неправильные данные загружаемого уровня! [" + cellItems.Length + "]");
             return;
         }
-        
-        int ii = 0;
+
+        int itemIndex = 0;
         
         for (i = 0; i < _grid.getRowCount(); i++) {
             for (j = 0; j < _grid.getColCount(); j++) {
-                int cellInfo = int.Parse(cellItems[ii++]);
-                
-                if (cellInfo == 0) {
-                    _grid.setCell(i, j, null);
-                } else {
-                    GameObject cell = (GameObject)UnityEngine.Object.Instantiate(cellPrefab);
-                    cell.transform.parent   = cellsRoot.transform;
-                    cell.transform.localPosition = new Vector3(Grid.CELL_WIDTH * j, -Grid.CELL_HEIGHT * i, 0);
-                    
-                    Cell c = cell.GetComponent<Cell>();
-                    
-                    CellBlocker blocker;
-                    
-                    int blockerType = cellInfo & 0xFF;
-                    int chipType    = (cellInfo >> 8) & 0xF;
-                    int bonusType   = (cellInfo >> 12) & 0xF;
-                    
-                    switch (blockerType) {
-                        case 1:
-                            blocker = BlockFactory.createNew(BlockerType.NONE, c.gameObject);
-                            break;
-                            
-                        case 2:
-                            blocker = BlockFactory.createNew(BlockerType.CHAIN, c.gameObject);
-                            break;
-                            
-                        case 3:
-                            blocker = BlockFactory.createNew(BlockerType.CHAIN2, c.gameObject);
-                            break;
-                            
-                        case 4:
-                            blocker = BlockFactory.createNew(BlockerType.WRAP, c.gameObject);
-                            break;
-                            
-                        case 5:
-                            blocker = BlockFactory.createNew(BlockerType.WRAP2, c.gameObject);
-                            break;
-                            
-                        default:
-                            Debug.LogError("Ошибка! Неверный тип ячейки. Номер ячейки : i = " + i + ", j = " + j );
-                            blocker = BlockFactory.createNew(BlockerType.NONE, c.gameObject);
-                            break;
-                    }
-                    
-                    Chip chip = null;
-                    
-                    if (chipType > 0) {
+                string[] cellItem = cellItems[itemIndex++].Split(':');
+
+                if (cellItem.Length <= 0) {
+                    Debug.LogError("Ошибка при загрузке уровня! cellItems.Length <= 0");
+                    return;
+                }
+
+                int cellInfo = 0;
+
+                try {
+                    cellInfo = int.Parse(cellItem[0]);
+                } catch (System.Exception e) {
+                    Debug.LogError("Ошибка при загрузке уровня!" + e.Message);
+                    return;
+                }
+
+                int cellType  = cellInfo & 0xF;
+                int chipType  = (cellInfo >> 4) & 0xF;
+                int bonusType = (cellInfo >> 8) & 0xFF;
+
+                Cell cell = null;
+
+                try {
+                    cell = CellFactory.createNew((CellType)cellType, _grid, level.chipTypes, 
+                                                 new IntVector2(i, j), cellsRoot);
+                } catch (System.Exception e) {
+                    Debug.LogError("Ошибка при загрузке уровня! Ошибка при создании ячейки[" 
+                                   + i + "," + j + "]: " + e.Message);
+                }
+
+                cell.transform.localPosition = new Vector3(Grid.CELL_WIDTH * j, -Grid.CELL_HEIGHT * i, 0);
+
+                // Добавление блокирующих элементов
+                if (cellItem.Length > 1) {
+                    string[] blockerItems = cellItem[1].Split(',');
+
+                    for (k = 0; k < blockerItems.Length; k++) {
+                        int blockerType = 0;
+
                         try {
-                            chip = ChipFactory.createNew((ChipType)(chipType - 1), (BonusType)bonusType, c.gameObject);
-                        } catch(System.Exception) {
-                            Debug.LogError("Ошибка! Неверный тип фишки");
+                            blockerType = int.Parse(blockerItems[k]);
+                        } catch (System.Exception e) {
+                            Debug.LogError("Ошибка при загрузке уровня! " + e.Message);
+                            return;
+                        }
+
+                        if ((BlockerType)blockerType != BlockerType.NONE) {
+                            CellBlocker blocker = BlockerFactory.createNew((BlockerType)blockerType, cell.gameObject);
+
+                            if (blocker != null) {
+                                cell.addBlocker(blocker);
+                            } else {
+                                Debug.LogError("Ошибка! Неверный тип блокирующего элемента. [" + i + "," + j + "]");
+                            }
                         }
                     }
-                    
-                    c.initialize(blocker, chip, new IntVector2(j, i));
-                    
-                    _grid.setCell(i, j, c);
                 }
+
+                // Добавление фишки
+                Chip chip = null;
+
+                try {
+                    if (chipType > 0) {
+                        chip = ChipFactory.createNew((ChipType)(chipType), (BonusType)bonusType, cell.gameObject);
+                    }
+                } catch (System.Exception e) {
+                    Debug.LogError("Ошибка! Неверный тип фишки: " + e.Message);
+                }
+
+                if (chip != null) {
+                    Debug.LogError("chip != null");
+                    cell.setChip(chip);
+                } else {
+                    //Debug.LogError("Ошибка! Неверный тип фишки: [" + i + "," + j + "]: " + e.Message);
+                }
+
+                _grid.setCell(i, j, cell);
             }
         }
         
         // Отцентровываем контейнер для ячеек
-        cellsRoot.transform.position = new Vector3(Grid.CELL_WIDTH*0.5f - Grid.CELL_WIDTH * _grid.getColCount()*0.5f,
-                                                   -Grid.CELL_HEIGHT*0.5f + Grid.CELL_HEIGHT * _grid.getRowCount()*0.5f, 0);
-    
+        cellsRoot.transform.position = new Vector3(Grid.CELL_WIDTH * 0.5f - Grid.CELL_WIDTH * _grid.getColCount() * 0.5f,
+                                                   -Grid.CELL_HEIGHT * 0.5f + Grid.CELL_HEIGHT * _grid.getRowCount() * 0.5f, 
+                                                   0);
     }
     
     /**
      * Начинает процесс перетасовки фишек.
      */
-    public void remixGrid()
+    private void remixGrid()
     {
         if (!_gridReshuffler.isShuffle()) {
             _gridReshuffler.start(_grid, level.chipTypes, new Vector3(0, 0, 0));
         }
+    }
+    
+    /**
+     * Добавляет очки за взрыв фишек.
+     * 
+     * @param количество очков
+     */
+    public void addPoints(int pointsCount)
+    {
+        this.level.points += pointsCount;
+        scoreLabel.text = "Score: " + this.level.points;
+    }
+    
+    /** Вызывается когда пользователь сделал ход. */
+    private void onMoved()
+    {
+        // Перерасчет очков.
+        this.level.remainingMoves--;
+        movesLabel.text = "Moves: " + this.level.remainingMoves;
+    }
+
+    /**
+     * 
+     */
+    public void onResize()
+    {
+        Vector3 offset   = Camera.main.WorldToScreenPoint(cellsRoot.transform.position + new Vector3(-Grid.CELL_WIDTH * 0.5f, Grid.CELL_HEIGHT * 0.5f, 0));
+        Vector3 cellSize = offset - Camera.main.WorldToScreenPoint(cellsRoot.transform.position + new Vector3(Grid.CELL_WIDTH * 0.5f, -Grid.CELL_HEIGHT * 0.5f, 0));
+        
+        _chipSwapper.changeSize(new IntVector2((int)offset.x, (int)offset.y), (int)Mathf.Abs(cellSize.x), (int)Mathf.Abs(cellSize.y));
     }
 }

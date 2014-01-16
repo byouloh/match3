@@ -45,6 +45,10 @@ public class CameraFit : MonoBehaviour
 				float scale = actualHeight / height;
 				Camera.main.orthographicSize = Camera.main.orthographicSize * scale;
 			}
+
+            if (Game.getInstance() != null) {
+                Game.getInstance().onResize();
+            }
 		}
 	}
 

@@ -64,7 +64,7 @@ public class GridReshuffler
             for (int j = 0; j < _grid.getColCount(); j++) {
                 Cell cell = _grid.getCell(i, j);
                 
-                if (cell != null && cell.chip != null && cell.blocker.canLeave()) {
+                if (cell != null && cell.chip != null && cell.canLeave()) {
                     if (cell.chip.bonusType == BonusType.NONE) {
                         _chips.Add(cell.chip);
                     } else {
@@ -83,7 +83,7 @@ public class GridReshuffler
      * @param deltaTime см. Time.deltaTime
      * 
      * @return возвращает состояние выполнения перемешивания:
-     * true - перемешивание заверщено, false - в процессе перемешивания
+     * true - перемешивание завершено, false - в процессе перемешивания
      */
     public bool step(float deltaTime)
     {
@@ -179,8 +179,6 @@ public class GridReshuffler
         
         List<IntVector2> emptyCells     = _grid.getEmptyCells();
         List<IntVector2> uncheckedCells = _grid.getEmptyCells();
-        
-        _bonuses.Clear();
         
         // Раскидываем бонусные фишки в случайные ячейки
         while (uncheckedCells.Count > 0 && _bonuses.Count > 0) {

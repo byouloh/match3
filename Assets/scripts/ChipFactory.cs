@@ -17,7 +17,7 @@ public static class ChipFactory
 		string spriteName = null;
 
 		switch (chipType) {
-			case ChipType.RED:
+            case ChipType.RED:
 				spriteName = "chipRedSprite";
 				break;
 				
@@ -75,7 +75,7 @@ public static class ChipFactory
 	 * @return CellBlocker класс блокирующего элемента
 	 * @throw System.ArgumentException, System.NullReferenceException
 	 */
-	private static Chip createNew(string chipName, string spriteName, ChipType chipType, BonusType bonusType, GameObject root)
+    private static Chip createNew(string chipName, string spriteName, ChipType chipType, BonusType bonusType, GameObject parent)
 	{
 		GameObject prefab = Resources.Load<GameObject>("prefabs/chips/" + chipName);
 		
@@ -85,9 +85,9 @@ public static class ChipFactory
 		
 		GameObject obj = (GameObject) UnityEngine.Object.Instantiate(prefab);
 
-		if (root != null) {
-			obj.transform.parent = root.transform;
-			obj.transform.position = root.transform.position;
+		if (parent != null) {
+            obj.transform.parent        = parent.transform;
+            obj.transform.localPosition = Vector3.zero;
 		}
         
         Sprite sprite = Resources.Load<Sprite>("textures/chipSprites/" + spriteName);

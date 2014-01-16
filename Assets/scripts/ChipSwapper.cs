@@ -73,6 +73,13 @@ public class ChipSwapper
         this._cellHeight = cellHeight;
     }
     
+    public void changeSize(IntVector2 leftTopOffset, int cellWidth, int cellHeight)
+    {
+        this._offset     = leftTopOffset;
+        this._cellWidth  = cellWidth;
+        this._cellHeight = cellHeight;
+    }
+    
     /**
      * Обновление состояния передвигаемых фишек.
      * 
@@ -80,20 +87,20 @@ public class ChipSwapper
      * 
      * @return Lines массив найденных линий после перемещения фишки, либо null, если нет линий
      */
-    public Lines step(float deltaTime)
+    public SwapResult step(float deltaTime)
     {
+        SwapResult res = new SwapResult();
+        res.chipMoved = false;
+        
         if (_state == SwapState.MS_READY && Input.GetMouseButtonDown(0)) {
             // Перехват нажатия мыши
             Cell cell = getCellAtCursor((int)Input.mousePosition.x, (int)Input.mousePosition.y);
             
-            if (cell == null || !cell.canLeave() || cell.chip == null) {
-                Debug.Log("Cell = NONE");
-            } else {
+            if (cell != null && cell.canLeave() && cell.chip != null) {
+                // попали по ячейке
                 _currentCell = cell;
                 _state = SwapState.MS_FIND_TARGET;
                 currentCellPosition = Camera.main.WorldToScreenPoint(cell.transform.position);
-                
-                Debug.Log("Cell = " + cell.position.y + ", " + cell.position.x);
             }
         } else
         if (_state == SwapState.MS_FIND_TARGET) {
@@ -103,10 +110,8 @@ public class ChipSwapper
             if (offset.sqrMagnitude > MOVE_MOUSE_RADIUS * MOVE_MOUSE_RADIUS) {
                 IntVector2 dir = getMoveDir(offset);
                 
-                Debug.Log("Dir = " + dir.y + ", " + dir.x);
-                
-                int i = _currentCell.position.y + dir.y;
-                int j = _currentCell.position.x + dir.x;
+                int i = _currentCell.position.x + dir.x;
+                int j = _currentCell.position.y + dir.y;
                 
                 if (i >= 0 && j >= 0 && i < _grid.getRowCount() && j < _grid.getColCount()) {
                     Cell cell = _grid.getCell(i, j);
@@ -114,6 +119,7 @@ public class ChipSwapper
                     if (cell != null && cell.canEnter() && cell.chip != null) {
                         _targetCell = cell;
                         _state = SwapState.MS_SWAP;
+                        res.chipMoved = true;
                     } else {
                         // Недопустимый ход
                         _currentCell = null;
@@ -146,17 +152,14 @@ public class ChipSwapper
                 matchDetector.findMatches();
                 
                 if (matchDetector.explosionLines.Count > 0) {
-                    Debug.Log("Ба бах!!!");
-                    
-                    for (int ii = 0; ii < matchDetector.explosionLines.Count; ii++) {
-                        for (int jj = 0; jj < matchDetector.explosionLines[ii].Count; jj++) {
-                            matchDetector.explosionLines[ii][jj].explode(null);
-                        }
-                    }
-                    
                     _state = SwapState.MS_READY;
                     
-                    return matchDetector.explosionLines;
+                    res.chipMoved   = true;
+                    res.currentCell = _currentCell;
+                    res.targetCell  = _targetCell;
+                    res.lines       = matchDetector.explosionLines;
+                    
+                    return res;
                 } else {
                     _state = SwapState.MS_REVERT;
                 }
@@ -181,6 +184,7 @@ public class ChipSwapper
                 _currentCell.chip.transform.parent = _currentCell.transform;
                 _targetCell.chip.transform.parent  = _targetCell.transform;
                 
+                res.chipMoved = true;
                 _state = SwapState.MS_READY;
             }
         }
@@ -191,7 +195,7 @@ public class ChipSwapper
             }
         }
         
-        return null;
+        return res;
     }
     
     /**
@@ -206,8 +210,8 @@ public class ChipSwapper
     {
         IntVector2 index = screenToIndex(x, y);
         
-        if (index.x >= 0 && index.y >= 0 && index.x < _grid.getColCount() && index.y < _grid.getRowCount()) {
-            return _grid.getCell(index.y, index.x);
+        if (index.x >= 0 && index.y >= 0 && index.x < _grid.getRowCount() && index.y < _grid.getColCount()) {
+            return _grid.getCell(index.x, index.y);
         } else {
             return null;
         }
@@ -226,7 +230,7 @@ public class ChipSwapper
         int dx = (x - _offset.x) / _cellWidth;
         int dy = (_offset.y - y) / _cellHeight;
         
-        return new IntVector2(dx, dy);
+        return new IntVector2(dy, dx);
     }
     
     /**
@@ -235,15 +239,15 @@ public class ChipSwapper
     private IntVector2 getMoveDir(Vector3 dir)
     {
         if (Vector3.Angle(dir, Vector3.right) <= 45) {
-            return new IntVector2(1, 0);
+            return IntVector2.rigth;
         } else
         if (Vector3.Angle(dir, Vector3.up) <= 45) {
-            return new IntVector2(0, -1);
+            return IntVector2.up;
         } else
         if (Vector3.Angle(dir, Vector3.left) <= 45) {
-            return new IntVector2(-1, 0);
-        } else {
-            return new IntVector2(0, 1);
+            return IntVector2.left;
         }
+
+        return IntVector2.down;
     }
 }
