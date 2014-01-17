@@ -8,7 +8,7 @@ public class FallingManager
     /**
      * Обрабатываемые объекты, которые должны упасть.
      */
-    private List<GameObject> _items;
+    private List<IFallable> _items;
 
     /**
      * Обьекты, которые должны удалиться после падения.
@@ -50,7 +50,7 @@ public class FallingManager
         _isStarting  = false;
         _isFalling   = false;
         _grid        = null;
-        _items       = new List<GameObject>();
+        _items       = new List<IFallable>();
         _removeItems = new List<GameObject>();
 
         _fallingCompleteCallback = null;
@@ -74,21 +74,18 @@ public class FallingManager
         float sqrSpeed       = verticalSpeed * verticalSpeed;
 
         for (int i = 0; i < _items.Count; i++) {
-            if (_items[i].transform.localPosition.sqrMagnitude < sqrSpeed) {
-                _items[i].transform.localPosition = Vector3.zero;
+            Vector2 pos = new Vector2(_items[i].getTransform().localPosition.x, _items[i].getTransform().localPosition.y);
+
+            if (pos.sqrMagnitude < sqrSpeed) {
+                _items[i].getTransform().localPosition = new Vector3(0f, 0f, _items[i].getTransform().localPosition.z);
+                _items[i].onFallingStop();
             } else {
-                float speed;
-                if (_items[i].transform.localPosition.x != 0) {
-                    speed = diagonalSpeed;
+                float speed = (_items[i].getTransform().localPosition.x != 0) ? diagonalSpeed : verticalSpeed;
 
-                    _items[i].GetComponent<Animator>().speed = diagonalSpeed * 60;
-                } else {
-                    speed = verticalSpeed;
-                }
-                 
+                pos -= pos.normalized * speed;
 
-                _items[i].transform.localPosition -= _items[i].transform.localPosition.normalized * speed;
-
+                _items[i].getTransform().localPosition = new Vector3(pos.x, pos.y, _items[i].getTransform().localPosition.z);
+                _items[i].onFalling(speed);
 
                 if (isFallingComplete) {
                     isFallingComplete = false;
@@ -175,7 +172,7 @@ public class FallingManager
                 cell = _grid.getCell(i, j);
 
                 if (cell != null && !cell.isEmpty() && cell.chip.transform.localPosition != Vector3.zero) {
-                    _items.Add(cell.chip.gameObject);
+                    _items.Add(cell.chip);
 
                     // После падения, фишка дожна удалиться, т.к. упадет в клетку, которая не может содержать фишку.
                     if (!cell.canEnter()) {
@@ -199,17 +196,15 @@ public class FallingManager
     }
 
     /***/
-    private void _startFallingAnimation () 
+    private void _startFallingAnimation() 
     {
         for (int i = 0; i < _items.Count; i++) {
-            if (_items[i].transform.localPosition.x > 0) {
-                _items[i].GetComponent<Animator>().SetTrigger("rigthDiagonalFall");
-                //_items[i].GetComponent<Animator>().speed = 1.0F;
-            } else if (_items[i].transform.localPosition.x < 0) {
-                _items[i].GetComponent<Animator>().SetTrigger("rigthDiagonalFall");
-                //_items[i].GetComponent<Animator>().speed = 1.0F;
+            if (_items[i].getTransform().localPosition.x > 0) {
+                _items[i].onFallingStart(FallDirection.LEFT_DOWN);
+            } else if (_items[i].getTransform().localPosition.x < 0) {
+                _items[i].onFallingStart(FallDirection.RIGHT_DOWN); 
             } else {
-                //
+                _items[i].onFallingStart(FallDirection.DOWN);
             }
         }
     }

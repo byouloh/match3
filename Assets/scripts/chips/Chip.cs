@@ -38,7 +38,7 @@ public enum BonusType
  * @author Azamat Bogotov azamat@e-magic.org
  * @author Timur Bogotov timur@e-magic.org
  */
-public class Chip: MonoBehaviour, IExplodable
+public class Chip: MonoBehaviour, IExplodable, IFallable
 {
     /** Префаб анимации взрыва. */
     public GameObject explosionPrefab;
@@ -51,15 +51,42 @@ public class Chip: MonoBehaviour, IExplodable
     
     /** Класс, который возвращает список взрываемых ячеек текущей фишкой. */
     public IExplodeHelper explodeHelper;
+
+    /** Контроллер анмации падения вниз вверх.*/
+    public RuntimeAnimatorController fallDownController = null;
+
+    /** Контроллер анмации падения вниз вверх.*/
+    public RuntimeAnimatorController fallRigthController = null;
+
+    /** Контроллер анмации падения вниз вверх.*/
+    public RuntimeAnimatorController fallLeftController = null;
+
+    /** Контроллер анимации подсказски.*/
+    public RuntimeAnimatorController helpAnimationController = null;
+
+    /** Компонент анимации фишки*/
+    private Animator _animator; 
     
     /** Обработчик события окончании анимации взрыва. */
     private Callback _explodeCallback;
     
     /** Количество очков, за взрыв фишки. */
     private uint _explodePoints;
-    
+
+
     /**
-     * Взрывает фишку
+     * Инициализация параметров фишки. 
+     */
+    private void Start()
+    {
+        _animator = gameObject.GetComponent<Animator>() as Animator;
+        _animator.runtimeAnimatorController = helpAnimationController;
+    }
+
+    /**
+     * Взрывает фишку /**
+     * Запускаем анимацию падения.
+     *
      * 
      * @param callback обработчик события окончания анимации взрыва фишки
      * 
@@ -175,6 +202,94 @@ public class Chip: MonoBehaviour, IExplodable
         }
 
         return true;
+    }
+
+    /**
+     * Запускаем анимацию падения.
+     * 
+     * @param fallDirection направление падения.
+     */
+    public void onFallingStart(FallDirection fallDirection)
+    {
+        RuntimeAnimatorController controller = null;
+
+        switch (fallDirection) 
+        {
+            case FallDirection.DOWN:
+                controller = fallDownController;
+                break;
+
+            case FallDirection.LEFT_DOWN:
+                controller = fallLeftController;
+                gameObject.transform.localPosition = new Vector3(gameObject.transform.localPosition.x, 
+                                                                 gameObject.transform.localPosition.y, 
+                                                                 Game.TOP_Z_INDEX);
+
+                break;
+
+            case FallDirection.RIGHT_DOWN:
+                controller = fallRigthController;
+                gameObject.transform.localPosition = new Vector3(gameObject.transform.localPosition.x, 
+                                                                 gameObject.transform.localPosition.y, 
+                                                                 Game.TOP_Z_INDEX);
+
+                break;
+
+            default:
+                break;
+        }
+
+        if (controller != null) {
+            _animator.runtimeAnimatorController = controller;
+            _animator.speed = 1.0f;
+            _animator.SetTrigger("animation");
+        }
+    }
+
+    /**
+     * Останавливаем анимацию падения.
+     */
+    public void onFallingStop()
+    {
+        _animator.speed = 1.0f;
+        gameObject.transform.localPosition = new Vector3(gameObject.transform.localPosition.x, 
+                                                         gameObject.transform.localPosition.y, 
+                                                         0f);
+
+        if (helpAnimationController != null) {
+            _animator.runtimeAnimatorController = helpAnimationController;
+        }
+    }
+
+    /**
+     * Функия перерасчитывает скорость падения фищек.
+     * 
+     * @param fallSpeed скорость падения
+     */
+    public void onFalling(float fallSpeed)
+    {
+        _animator.speed = fallSpeed * 80;
+    }
+
+    /**
+     * Геттер для transorm.
+     */
+    public Transform getTransform()
+    {
+        return gameObject.transform;
+    }
+
+    /**
+     * Запускаем анимацию подсказски.
+     */
+    public void startHelpAnimation()
+    {
+        _animator.speed = 1.0f;
+
+        if (helpAnimationController != null) {
+            _animator.runtimeAnimatorController = helpAnimationController;
+            _animator.SetTrigger("animation");
+        }
     }
 }
 
