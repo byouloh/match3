@@ -43,7 +43,6 @@ public class LinesExploder
     public void start(SwapResult swapResult)
     {
         int i;
-        int j;
         
         _currentInfo = null;
         _targetInfo  = null;
@@ -58,8 +57,6 @@ public class LinesExploder
         List<BonusInfo> bonusChips = getBonusChipsInfo(swapResult);
         
         for (i = 0; i < swapResult.lines.Count; i++) {
-            Match line = swapResult.lines[i];
-            
             recurciveExplosion(swapResult.lines[i]);
         }
         
