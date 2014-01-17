@@ -213,10 +213,6 @@ public class Chip: MonoBehaviour, IExplodable, IFallable
     {
         RuntimeAnimatorController controller = null;
 
-        gameObject.transform.localPosition = new Vector3(gameObject.transform.localPosition.x, 
-                                                         gameObject.transform.localPosition.y, 
-                                                         Game.TOP_Z_INDEX);
-
         switch (fallDirection) 
         {
             case FallDirection.DOWN:
@@ -225,10 +221,18 @@ public class Chip: MonoBehaviour, IExplodable, IFallable
 
             case FallDirection.LEFT_DOWN:
                 controller = fallLeftController;
+                gameObject.transform.localPosition = new Vector3(gameObject.transform.localPosition.x, 
+                                                                 gameObject.transform.localPosition.y, 
+                                                                 Game.TOP_Z_INDEX);
+
                 break;
 
             case FallDirection.RIGHT_DOWN:
                 controller = fallRigthController;
+                gameObject.transform.localPosition = new Vector3(gameObject.transform.localPosition.x, 
+                                                                 gameObject.transform.localPosition.y, 
+                                                                 Game.TOP_Z_INDEX);
+
                 break;
 
             default:
