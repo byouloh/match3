@@ -78,7 +78,7 @@ public static class ChipFactory
      * @return CellBlocker класс блокирующего элемента
      * @throw System.ArgumentException, System.NullReferenceException
      */
-    private static Chip createNew(string chipName, string spriteName, ChipType chipType, BonusType bonusType, GameObject root)
+    private static Chip createNew(string chipName, string spriteName, ChipType chipType, BonusType bonusType, GameObject parent)
     {
         GameObject prefab = Resources.Load<GameObject>("prefabs/chips/" + chipName);
         
@@ -86,57 +86,57 @@ public static class ChipFactory
             throw new System.NullReferenceException("Ошибка! Не удалось загрузить префаб: " + chipName);
         }
         
-        GameObject obj = (GameObject)UnityEngine.Object.Instantiate(prefab);
+        GameObject chipObject = (GameObject)UnityEngine.Object.Instantiate(prefab);
         
-        if (root != null) {
-            obj.transform.parent   = root.transform;
-            obj.transform.position = root.transform.position;
+        if (parent != null) {
+            chipObject.transform.parent   = parent.transform;
+            chipObject.transform.position = parent.transform.position;
         }
         
         Sprite sprite = Resources.Load<Sprite>("textures/chipSprites/" + spriteName);
         
         if (sprite == null) {
-            UnityEngine.Object.Destroy(obj);
+            UnityEngine.Object.Destroy(chipObject);
             throw new System.NullReferenceException("Ошибка! Не удалось загрузить префаб: " + spriteName);
         }
         
-        obj.GetComponent<SpriteRenderer>().sprite = sprite;
+        chipObject.GetComponent<SpriteRenderer>().sprite = sprite;
         
-        Chip res = obj.GetComponent<Chip>();
+        Chip chip = chipObject.GetComponent<Chip>();
         
-        if (res == null) {
-            UnityEngine.Object.Destroy(obj);
-            throw new System.NullReferenceException("Ошибка! На префабе нет компоненты CellBlocker");
+        if (chip == null) {
+            UnityEngine.Object.Destroy(chipObject);
+            throw new System.NullReferenceException("Ошибка! На префабе нет компоненты Spite renderer");
         }
         
-        res.type      = chipType;
-        res.bonusType = bonusType;
+        chip.type      = chipType;
+        chip.bonusType = bonusType;
         
         switch (bonusType) {
             case BonusType.NONE :
-                res.explodeHelper = null;
+                chip.explodeHelper = null;
                 break;
                 
             case BonusType.HORIZONTAL_STRIP :
-                res.explodeHelper = new ExplodeLineHelper(bonusType);
+                chip.explodeHelper = new ExplodeLineHelper(bonusType);
                 break;
                 
             case BonusType.VERTICAL_STRIP :
-                res.explodeHelper = new ExplodeLineHelper(bonusType);
+                chip.explodeHelper = new ExplodeLineHelper(bonusType);
                 break;
             
             case BonusType.SAME_TYPE :
-                res.explodeHelper = new ExplodeSameHelper();
+                chip.explodeHelper = new ExplodeSameHelper();
                 break;
                 
             default:
-                res.explodeHelper = null;
+                chip.explodeHelper = null;
                 throw new System.ArgumentException("Ошибка! Неверный тип бонуса");
                 break;
         }
         
-        res.setExplodePoints(Game.getInstance().level.chipsInfo[(int)bonusType].explodePoints);
-        
-        return res;
+        chip.setExplodePoints(Game.getInstance().level.chipsInfo[(int)bonusType].explodePoints);
+
+        return chip;
     }
 }

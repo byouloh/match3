@@ -154,8 +154,7 @@ public class Game: MonoBehaviour
             ((Time.time - _lastHelpTime) > SHOW_HELP_INTERVAL)
         ) {
             for (int i = 0; i < _helpMatch.Count; i++) {
-                _helpMatch[i].chip.GetComponent<Animator>().SetTrigger("flicker");
-                _helpMatch[i].chip.GetComponent<Animator>().speed = 1.0f;
+                _helpMatch[i].chip.startHelpAnimation();
             }
             
             _lastHelpTime = Time.time;
