@@ -113,6 +113,7 @@ public class Game: MonoBehaviour
         _chipSwapper = new ChipSwapper(_grid, new IntVector2((int)offset.x, (int)offset.y), (int)Mathf.Abs(cellSize.x), (int)Mathf.Abs(cellSize.y));
 
         _helpMatch = new Match();
+        _findHelpMatch();
     }
     
     /**

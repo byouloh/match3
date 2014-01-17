@@ -71,7 +71,7 @@ public static class CellFactory
                 mask = (GameObject)UnityEngine.Object.Instantiate(maskPrefab);
                 mask.transform.parent        = cell.transform;
                 mask.transform.localPosition = new Vector3(0f, 0f, Game.CELL_MASK_Z_INDEX);
-
+            
                 break;
 
             case CellType.TELEPORTER:

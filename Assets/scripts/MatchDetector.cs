@@ -366,8 +366,11 @@ public class MatchDetector
             #endif   
         }
 
-        // Если клетки одинаковые то выходим 
-        if (_grid.getCell(cell.x, cell.y).chip.compareTo(_grid.getCell(cellCoordinates.x, cellCoordinates.y).chip)) {
+        // Если клетки одинаковые и не бонусные
+        if ((_grid.getCell(cell.x, cell.y).chip.compareTo(_grid.getCell(cellCoordinates.x, cellCoordinates.y).chip)) && 
+            ((_grid.getCell(cell.x, cell.y).chip.bonusType == BonusType.NONE) && 
+         (_grid.getCell(cellCoordinates.x, cellCoordinates.y).chip.bonusType == BonusType.NONE))
+        ) {
             #if HELPER
             Debug.Log("Клетки одинаковые < cell [" + cellCoordinates.x + "][" + cellCoordinates.y + "] для клетки [" + cell.x + "][" + cell.y + "]");
             #endif
@@ -483,7 +486,6 @@ public class MatchDetector
             }
 
             if (!canUp && !canDown && !canLeft && !canRight) {
-                break;
             }
         }
 
@@ -539,6 +541,30 @@ public class MatchDetector
 
             tmpMatch.Add(_grid.getCell(cell.x, cell.y));
             foundMatch.Add(tmpMatch);
+        }
+
+        // Если обе фишки бонусные
+        if ((_grid.getCell(cell.x, cell.y).chip.bonusType != BonusType.NONE) && 
+            (_grid.getCell(cellCoordinates.x, cellCoordinates.y).chip.bonusType != BonusType.NONE)
+           ) {
+
+            Match tmpMatch = new Match();
+            tmpMatch.Add(_grid.getCell(cell.x, cell.y));
+            tmpMatch.Add(_grid.getCell(cellCoordinates.x, cellCoordinates.y));
+
+            foundMatch.Add (tmpMatch);
+        }
+
+        // Если хоть одна фишка цветная.
+        if ((_grid.getCell(cell.x, cell.y).chip.bonusType == BonusType.SAME_TYPE) || 
+            (_grid.getCell(cellCoordinates.x, cellCoordinates.y).chip.bonusType == BonusType.SAME_TYPE)
+            ) {
+            
+            Match tmpMatch = new Match();
+            tmpMatch.Add(_grid.getCell(cell.x, cell.y));
+            tmpMatch.Add(_grid.getCell(cellCoordinates.x, cellCoordinates.y));
+            
+            foundMatch.Add (tmpMatch);
         }
 
         return foundMatch;
