@@ -26,11 +26,17 @@ public class Game: MonoBehaviour
 	/** Контейнер для ячеек. */
 	public GameObject cellsRoot;
     
+    /** Контейнер для оконтовки ячеек. */
+    public GameObject edgingCellsRoot;
+    
     /** Контейнер для UI. */
     public GameObject uiRoot;
     
 	/** Шаблон ячейки. */
 	public GameObject cellPrefab;
+    
+    /** Шаблон оконтовки для ячейки. */
+    public GameObject cellEdgePrefab;
     
     /** Текстовая метка для отображения количества очков. */
     public UILabel scoreLabel;
@@ -61,7 +67,7 @@ public class Game: MonoBehaviour
 
     /** Время последнего показа подсказки. */
     private float _lastHelpTime;
-
+    
     /** Класс, которорый перемешает фишки на уровне. */
     private GridReshuffler _gridReshuffler;
     
@@ -111,8 +117,11 @@ public class Game: MonoBehaviour
         Vector3 cellSize = offset - Camera.main.WorldToScreenPoint(cellsRoot.transform.position + new Vector3(Grid.CELL_WIDTH * 0.5f, -Grid.CELL_HEIGHT * 0.5f, 0));
         
         _chipSwapper = new ChipSwapper(_grid, new IntVector2((int)offset.x, (int)offset.y), (int)Mathf.Abs(cellSize.x), (int)Mathf.Abs(cellSize.y));
-
+        
         _helpMatch = new Match();
+        
+        CellEdgeGenerator gen = new CellEdgeGenerator(_grid, edgingCellsRoot, cellEdgePrefab, "edgeOuter", "edgeInner");
+        gen.generate();
     }
     
     /**

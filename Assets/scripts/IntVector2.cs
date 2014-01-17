@@ -10,7 +10,31 @@ public struct IntVector2
 {
     public int x;
     public int y;
-
+    
+    public int i
+    {
+        get
+        {
+            return x;
+        }
+        set
+        {
+            x = value;
+        }
+    }
+    
+    public int j
+    {
+        get
+        {
+            return y;
+        }
+        set
+        {
+            y = value;
+        }
+    }
+    
     public static IntVector2 up
     {
         get
@@ -57,7 +81,17 @@ public struct IntVector2
         this.x = x;
         this.y = y;
     }
-
+    
+    public static IntVector2 operator +(IntVector2 a, IntVector2 b)
+    {
+        return new IntVector2(a.x + b.x, a.y + b.y);
+    }
+    
+    public static IntVector2 operator -(IntVector2 a, IntVector2 b)
+    {
+        return new IntVector2(a.x - b.x, a.y - b.y);
+    }
+    
     /**
      * Позваляет обращатся к значениям и менять их по индексу.
      * 
