@@ -486,6 +486,7 @@ public class MatchDetector
             }
 
             if (!canUp && !canDown && !canLeft && !canRight) {
+                break;
             }
         }
 
