@@ -25,7 +25,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 100000}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -10.7751226, y: .0147070587, z: 0}
   m_LocalScale: {x: .800000012, y: .800000012, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -57,7 +57,7 @@ MonoBehaviour:
   explosionPrefab: {fileID: 100000, guid: d48593c7652b8914c8e10b24b53cb602, type: 2}
   type: 0
   bonusType: 0
-  fallDownController: {fileID: 9100000, guid: bd5c50ac1e0d54ae3bbfdb3518e578bc, type: 2}
+  fallDownController: {fileID: 0}
   fallRigthController: {fileID: 9100000, guid: 00f342ccd51fc4e7eb44410241a4e49d, type: 2}
   fallLeftController: {fileID: 9100000, guid: 00f342ccd51fc4e7eb44410241a4e49d, type: 2}
   helpAnimationController: {fileID: 9100000, guid: 65d08bb6935664ca4aad4577250ec190,

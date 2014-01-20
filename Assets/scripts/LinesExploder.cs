@@ -115,7 +115,7 @@ public class LinesExploder
             
             GameObject scoreLabel = (GameObject)UnityEngine.Object.Instantiate(_scorePrefab);
             scoreLabel.transform.parent   = _uiRoot.transform;
-            scoreLabel.transform.position = lineCenter;
+            scoreLabel.transform.position = lineCenter + new Vector3(0, 0, Game.TOP_Z_INDEX);
             scoreLabel.GetComponent<UILabel>().text = "" + explodePoints;
             
             Game.getInstance().addPoints((int)explodePoints);

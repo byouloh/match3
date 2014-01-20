@@ -79,7 +79,7 @@ public class Chip: MonoBehaviour, IExplodable, IFallable
      */
     private void Start()
     {
-        _animator = gameObject.GetComponent<Animator>() as Animator;
+        _animator = gameObject.GetComponent<Animator>();
         _animator.runtimeAnimatorController = helpAnimationController;
     }
 
@@ -176,14 +176,7 @@ public class Chip: MonoBehaviour, IExplodable, IFallable
      */
     public Chip clone()
     {
-        GameObject go = GameObject.Instantiate(gameObject) as GameObject;
-        Chip chip     = go.GetComponent<Chip>();
-
-        chip.explosionPrefab = this.explosionPrefab;
-        chip.type            = this.type;
-        chip.bonusType       = this.bonusType;
-
-        return chip;
+        return ChipFactory.createNew(type, bonusType, transform.parent.gameObject);
     }
 
     /**
@@ -284,11 +277,13 @@ public class Chip: MonoBehaviour, IExplodable, IFallable
      */
     public void startHelpAnimation()
     {
-        _animator.speed = 1.0f;
-
-        if (helpAnimationController != null) {
-            _animator.runtimeAnimatorController = helpAnimationController;
-            _animator.SetTrigger("animation");
+        if (_animator != null) {
+            _animator.speed = 1.0f;
+    
+            if (helpAnimationController != null) {
+                _animator.runtimeAnimatorController = helpAnimationController;
+                _animator.SetTrigger("animation");
+            }
         }
     }
 }
