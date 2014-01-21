@@ -36,11 +36,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 100000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25e6622456a9cc34b8b517fc37e1c95a, type: 3}
+  m_Script: {fileID: 11500000, guid: 9949321a1ff46424eabb1b3435810df5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   chip: {fileID: 0}
-  blocker: {fileID: 0}
 --- !u!212 &21200000
 SpriteRenderer:
   m_ObjectHideFlags: 1
@@ -59,10 +58,10 @@ SpriteRenderer:
   m_UseLightProbes: 0
   m_LightProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
-  m_SortingLayer: 0
+  m_SortingLayer: -1
   m_SortingOrder: 0
-  m_SortingLayerID: 0
-  m_Sprite: {fileID: 21300000, guid: 6690416d6cc069b47b1c8f65e6f51b46, type: 3}
+  m_SortingLayerID: 536544747
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1001 &100100000
 Prefab:
