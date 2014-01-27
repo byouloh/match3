@@ -132,7 +132,6 @@ public static class ChipFactory
             default:
                 chip.explodeHelper = null;
                 throw new System.ArgumentException("Ошибка! Неверный тип бонуса");
-                break;
         }
         
         chip.setExplodePoints(Game.getInstance().level.chipsInfo[(int)bonusType].explodePoints);

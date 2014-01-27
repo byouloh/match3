@@ -184,8 +184,8 @@ public class GridReshuffler
         while (uncheckedCells.Count > 0 && _bonuses.Count > 0) {
             itemIndex = Random.Range(0, uncheckedCells.Count);
             
-            i = uncheckedCells[itemIndex].y;
-            j = uncheckedCells[itemIndex].x;
+            i = uncheckedCells[itemIndex].x;
+            j = uncheckedCells[itemIndex].y;
             
             uint ignored   = _grid.getIgnoredTypes(i, j);
             uint usingMask = _usingTypes & (~ignored);
@@ -215,7 +215,7 @@ public class GridReshuffler
         
         // Обновление списка перемешиваемых фишек
         for (i = 0; i < emptyCells.Count; i++) {
-            Chip chip = _grid.getCell(emptyCells[i].y, emptyCells[i].x).chip;
+            Chip chip = _grid.getCell(emptyCells[i].x, emptyCells[i].y).chip;
             
             if (chip == null) {
                 Debug.LogError("Ошибка! В ячейке нет фишки");

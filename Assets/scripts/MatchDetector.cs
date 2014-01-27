@@ -55,27 +55,28 @@ public class MatchDetector
         } else {
             explosionLines = new Lines();
         }
-
+        
         // Проверяем по строкам. 
         for (i = 0; i < _grid.getRowCount(); i++) {
-            for (j = 0; j < (_grid.getColCount() - 2); j++) {
+            
+            j = 0;
+            while (j < _grid.getColCount() - 2) {
                 chainLength = 1;
-
-                while ((j + chainLength) < _grid.getColCount())  {
-                    cell1 = _grid.getCell(i, j);
-                    cell2 = _grid.getCell(i, j + chainLength);
-
-                    if ((cell1 != null) && (cell2 != null) && 
-                        (cell1.chip != null) && (cell2.chip != null) &&
-                        (cell1.chip.compareTo(cell2.chip))
-                    ) {
-                        chainLength++;
-                    } else {     
-                        break;
+                
+                cell1 = _grid.getCell(i, j);
+                
+                if (cell1 != null && cell1.chip != null) {
+                    while (j + chainLength < _grid.getColCount())  {
+                        cell2 = _grid.getCell(i, j + chainLength);
+    
+                        if (cell2 != null && cell2.chip != null && cell1.chip.compareTo(cell2.chip)) {
+                            chainLength++;
+                        } else {     
+                            break;
+                        }
                     }
                 }
-
-                //Debug.LogError();
+                
                 if (chainLength >= 3) {
                     // Запихиваем все в возвращаемый массив
                     Match tmpMatch = new Match();
@@ -87,30 +88,31 @@ public class MatchDetector
                     explosionLines.Add(tmpMatch);
                 }
 
-                j += (chainLength - 1);
+                j += chainLength;
             }
         }
 
         // Проверяем по столбцам.
         for (j = 0; j < _grid.getColCount(); j++) {
-            for (i = 0; i < (_grid.getRowCount() - 2); i++) {
+            
+            i = 0;
+            while (i < _grid.getRowCount() - 2) {
                 chainLength = 1;
                 
-                while ((i + chainLength) < _grid.getRowCount())  {
-                    cell1 = _grid.getCell(i, j);
-                    cell2 = _grid.getCell(i + chainLength, j);
-                    
-                    if ((cell1 != null) && (cell2 != null) && 
-                        (cell1.chip != null) && (cell2.chip != null) &&
-                        (cell1.chip.compareTo(cell2.chip))
-                    ) {
-                        chainLength++;
-                    } else {     
-                        break;
+                cell1 = _grid.getCell(i, j);
+                
+                if (cell1 != null && cell1.chip != null) {
+                    while ((i + chainLength) < _grid.getRowCount())  {
+                        cell2 = _grid.getCell(i + chainLength, j);
+                        
+                        if (cell2 != null && cell2.chip != null && cell1.chip.compareTo(cell2.chip)) {
+                            chainLength++;
+                        } else {     
+                            break;
+                        }
                     }
                 }
-
-                //Debug.LogError();
+                
                 if (chainLength >= 3) {
                     // Запихиваем все в возвращаемый массив
                     Match tmpMatch = new Match();
@@ -122,7 +124,7 @@ public class MatchDetector
                     explosionLines.Add(tmpMatch);
                 }
 
-                i += (chainLength - 1);
+                i += chainLength;
             }
         }
     }

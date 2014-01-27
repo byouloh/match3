@@ -126,8 +126,8 @@ public class Grid
         
         while (unCheckedCells.Count > 0) {
             int itemIndex = Random.Range(0, unCheckedCells.Count);
-            int i = unCheckedCells[itemIndex].y;
-            int j = unCheckedCells[itemIndex].x;
+            int i = unCheckedCells[itemIndex].x;
+            int j = unCheckedCells[itemIndex].y;
             
             if (_cells[i][j] == null || _cells[i][j].chip != null || 
                 !_cells[i][j].canEnter() || !_cells[i][j].canContainChip()
@@ -135,9 +135,9 @@ public class Grid
                 unCheckedCells.RemoveAt(itemIndex);
             } else {
                 for (int ii = 0; ii < offset.Count; ii++) {
-                    if (existInList(emptyCells, offset[ii].aj + j, offset[ii].ai + i) &&
-                        existInList(emptyCells, offset[ii].bj + j, offset[ii].bi + i) &&
-                        existInList(emptyCells, offset[ii].moveJ + j, offset[ii].moveI + i) &&
+                    if (existInList(emptyCells, offset[ii].ai + i, offset[ii].aj + j) &&
+                        existInList(emptyCells, offset[ii].bi + i, offset[ii].bj + j) &&
+                        existInList(emptyCells, offset[ii].moveI + i, offset[ii].moveJ + j) &&
                        _cells[offset[ii].moveI + i][offset[ii].moveJ + j].canLeave()
                     ) {
                         changeChipType(_cells[offset[ii].ai + i][offset[ii].aj + j], type);
@@ -172,7 +172,7 @@ public class Grid
      */
     private void fillRandomChips(uint chipTypes)
     {
-        List<IntVector2> createdCells = new List<IntVector2>();
+        //List<IntVector2> createdCells = new List<IntVector2>();
         int i;
         int j;
         
@@ -184,10 +184,9 @@ public class Grid
                     uint ignored = getIgnoredTypes(i, j);
                     uint usingMask = chipTypes & (~ignored);
                     
-                    if (usingMask == 0) {
-                        usingMask = (uint)getRandomChipType(chipTypes);
-                    } else {
+                    if (usingMask != 0) {
                         List<ChipType> usingTypes = getChipTypesFromMask(usingMask);
+                        
                         if (usingTypes.Count != 1) {
                             if (j < _colCount - 1 && getCell(i, j + 1) != null && getCell(i, j + 1).chip == null) {
                                 uint rightIgnored = getIgnoredTypes(i, j + 1);
@@ -200,20 +199,16 @@ public class Grid
                                     usingMask &= (~usingRightChipMask);
                                 }
                             }
-                            
-                            if (usingMask == 0) {
-                                usingMask = (uint)getRandomChipType(chipTypes);
-                            }
                         }
                     }
                     
                     if (usingMask == 0) {
-                        usingMask = (uint)getRandomChipType(chipTypes);
+                        usingMask = chipTypes;//(uint)getRandomChipType(chipTypes);
                     }
                     
                     cell.chip = createChipRandom(usingMask, cell.gameObject);
                     
-                    createdCells.Add(new IntVector2(j, i));
+                    //createdCells.Add(new IntVector2(i, j));
                 }
             }
         }
@@ -227,9 +222,9 @@ public class Grid
     private void clearTempChips(List<IntVector2> list)
     {
         for (int i = 0; i < list.Count; i++) {
-            if (_cells[list[i].y][list[i].x].chip != null) {
-                UnityEngine.Object.Destroy(_cells[list[i].y][list[i].x].chip.gameObject);
-                _cells[list[i].y][list[i].x].chip = null;
+            if (_cells[list[i].x][list[i].y].chip != null) {
+                UnityEngine.Object.Destroy(_cells[list[i].x][list[i].y].chip.gameObject);
+                _cells[list[i].x][list[i].y].chip = null;
             }
         }
     }
@@ -244,7 +239,7 @@ public class Grid
         for (int i = 0; i < _rowCount; i++) {
             for (int j = 0; j < _colCount; j++) {
                 if (_cells[i][j].isEmpty() && _cells[i][j].canContainChip()) {
-                    res.Add(new IntVector2(j, i));
+                    res.Add(new IntVector2(i, j));
                 }
             }
         }

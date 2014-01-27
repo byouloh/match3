@@ -194,15 +194,7 @@ public class Game: MonoBehaviour
             _findHelpMatch();
         }
     }
-
-    /**
-     * Прорисовка элементов GUI.
-     */
-    void OnGUI()
-	{
-
-	}
-
+    
     /**
      * Запускает поиск подсказки(поиск возможного хода).
      */
